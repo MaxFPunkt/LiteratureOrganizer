@@ -24,8 +24,10 @@ function edgeAt(sx,sy){
 let curMouse=null, dragging=null, panning=false, panStart=null, downPos=null, movedFar=false;
 const tip=document.getElementById("tip");
 function showTip(p,sx,sy){
-  const note=p.note&&p.note.trim()? `<div class="tn">${esc(p.note)}</div>` : `<div class="tnone">No notes yet — click to add a summary.</div>`;
-  tip.innerHTML=`<div class="tt">${esc(p.title)}</div>${note}`;
+  let n=(p.note||"").trim(); if(n.length>420) n=n.slice(0,419)+"…";
+  const note=n? `<div class="tn">${esc(n)}</div>` : `<div class="tnone">No notes yet. Click the paper to add some.</div>`;
+  const meta=[firstAuthor(p)&&(firstAuthor(p)+((p.authors||"").includes(",")?" et al.":"")),p.year].filter(Boolean).join(", ");
+  tip.innerHTML=`<div class="tt">${esc(p.title||"Untitled")}</div>${meta?`<div class="tm">${esc(meta)}</div>`:""}${note}`;
   tip.style.display="block";
   const r=cv.getBoundingClientRect(); let tx=sx+16, ty=sy+14;
   if(tx+tip.offsetWidth>r.width) tx=sx-tip.offsetWidth-12;
@@ -145,7 +147,7 @@ cv.addEventListener("dblclick",e=>{
 /* ============================ Touch (mobile) ============================ */
 let pinch=null;
 cv.addEventListener("touchstart",ev=>{
-  layoutMenu.classList.remove("open"); exportMenu.classList.remove("open"); if(typeof addMenu!=="undefined") addMenu.classList.remove("open");
+  closeMenus();
   const r=cv.getBoundingClientRect();
   if(ev.touches.length===1){ const t=ev.touches[0]; const sx=t.clientX-r.left, sy=t.clientY-r.top;
     downPos=[sx,sy]; movedFar=false; curMouse=[sx,sy]; const hit=nodeAt(sx,sy);

@@ -1,6 +1,6 @@
 /* ============================ State ============================ */
 const KEY="litnet.v2";
-const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 let state={papers:[], edges:[]};
 let bookmarks=[];
 let showLabels=false;
@@ -16,12 +16,13 @@ let snapOn=true;
 let legendNames={}, colorFilter=null;
 let linkMode=false, linkFirst=null, searchQ="", shiftDown=false;
 let uid=1;
-const PALETTE=["#6C8CFF","#FF8A5B","#34C7A0","#B57BFF","#FFC247","#FF6B9D","#3FB6E6","#9CCB3B","#FF7A7A"];
+/* Muted, print-friendly hues; all hold white text and read on the pale canvas. */
+const PALETTE=["#3E6FB0","#C0623B","#2E8A6E","#7759B0","#C3962A","#B04C79","#2C8DA6","#6F8A35","#A84A4A"];
 function nextId(){ return "p"+(uid++); }
 function inkFor(c){
   if(!/^#[0-9a-fA-F]{6}$/.test(c||"")) return "#ffffff";
   const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);
-  return (0.299*r+0.587*g+0.114*b)>150? "#232a40" : "#ffffff";
+  return (0.299*r+0.587*g+0.114*b)>160? "#1C2421" : "#ffffff";
 }
 function colorFor(p){
   if(p.color) return p.color;
@@ -29,6 +30,7 @@ function colorFor(p){
   for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0;
   return PALETTE[h%PALETTE.length];
 }
+/* Returns true when a stored library was found (used to seed demo papers only on the very first run). */
 function load(){
   try{
     const raw=localStorage.getItem(KEY);
@@ -39,28 +41,37 @@ function load(){
       if(typeof d.snapOn==="boolean") snapOn=d.snapOn;
       if(d.legendNames && typeof d.legendNames==="object") legendNames=d.legendNames;
       uid=d.uid|| (state.papers.reduce((m,p)=>Math.max(m,parseInt((p.id||"p0").slice(1))||0),0)+1);
+      return true;
     }
   }catch(e){ console.warn("load failed",e); }
+  return false;
 }
 function persistObj(){ return {papers:state.papers,edges:state.edges,uid,bookmarks,showLabels,lastLayout,globalShape,bundleStrength,colorByTag,snapOn,legendNames}; }
 let saveTimer=null, dirty=false;
 function markDirty(){ dirty=true; updateDirty(); }
 function markClean(){ dirty=false; updateDirty(); }
-function updateDirty(){ const b=document.getElementById("btnSave"); if(b) b.classList.toggle("dirty",dirty); }
+function updateDirty(){ const d=document.getElementById("dirtyMark"); if(d) d.style.visibility= dirty?"visible":"hidden";
+  const b=document.getElementById("btnSave");
+  if(b) b.title= dirty? (fileHandle? "Save changes to "+currentFileName+" (Ctrl/Cmd+S)" : "Save to a file (Ctrl/Cmd+S)") : "Save (Ctrl/Cmd+S)"; }
+/* Autosave to this browser; "dirty" means the library has changes not yet written to a file. */
 function save(){
   markDirty();
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
-    try{ localStorage.setItem(KEY,JSON.stringify(persistObj())); flashSaved(); }
+    try{ localStorage.setItem(KEY,JSON.stringify(persistObj())); }
     catch(e){ console.warn("save failed",e); }
   },300);
 }
-function flashSaved(){ const el=document.getElementById("stats"); if(el){ el.dataset.saved="1"; updateStats(); setTimeout(()=>{el.dataset.saved="";updateStats();},900);} }
-function updateStats(){ const el=document.getElementById("stats");
-  el.textContent=`${state.papers.length} papers · ${state.edges.length} links${el.dataset.saved?" · saved ✓":""}`; }
-function updateFileName(){ const el=document.getElementById("fname");
-  el.textContent= currentFileName? ("📄 "+currentFileName):"";
-  el.title= fileHandle? "Save / Ctrl+S writes back to this file" : (currentFileName?"Opened a copy — Save downloads a new file":""); }
+function flushSave(){ clearTimeout(saveTimer); try{ localStorage.setItem(KEY,JSON.stringify(persistObj())); }catch(e){} }
+function updateStats(){ const el=document.getElementById("stats"); if(!el) return;
+  const n=state.papers.length, m=state.edges.length;
+  el.textContent= n? `${n} paper${n===1?"":"s"}, ${m} link${m===1?"":"s"}` : ""; }
+function libraryName(){ return currentFileName? currentFileName.replace(/\.json$/i,"") : null; }
+function updateFileName(){ const el=document.getElementById("fname"); const nm=libraryName();
+  el.textContent= nm || "Untitled library";
+  el.classList.toggle("untitled",!nm);
+  el.title= fileHandle? "Saving writes back to "+currentFileName : (nm? "Opened as a copy; saving downloads a new file" : "Not saved to a file yet. Your work is kept in this browser.");
+  document.title= (nm||"Untitled library")+" — LitNet"; }
 
 /* ---- undo ---- */
 let undoStack=[], redoStack=[];
@@ -72,7 +83,7 @@ function editUndo(key){ if(editSession!==key){ pushUndo(); editSession=key; } }
 function applySnapshot(s){
   const d=JSON.parse(s); state.papers=d.papers; state.edges=d.edges; uid=d.uid;
   if(d.globalShape){ globalShape=d.globalShape; if(typeof setShapeBtn==="function") setShapeBtn(); }
-  selId=null; selEdge=null; heb=null; save(); renderSide(); updateStats(); requestDraw(); }
+  selId=null; selEdge=null; selSet.clear(); heb=null; save(); renderSide(); updateStats(); updateHint(); requestDraw(); }
 function undo(){ const s=undoStack.pop(); if(!s) return; redoStack.push(snapshot()); applySnapshot(s); }
 function redo(){ const s=redoStack.pop(); if(!s) return; undoStack.push(snapshot()); applySnapshot(s); }
 
@@ -91,6 +102,7 @@ function deletePaper(id){ selSet.delete(id); if(focusId===id) focusId=null;
   state.papers=state.papers.filter(p=>p.id!==id);
   state.edges=state.edges.filter(e=>e.from!==id&&e.to!==id); if(selId===id) selId=null; heb=null; }
 function effShape(p){ return p.shape || globalShape; }
+function firstAuthor(p){ const a=(p.authors||"").split(",")[0].trim(); return a? a.split(" ").pop() : ""; }
 
 /* ============================ Search ============================ */
 function nodeText(p){ return (p.title+" "+p.authors+" "+p.venue+" "+p.year+" "+(p.note||"")+" "+((p.tags||[]).join(" "))).toLowerCase(); }

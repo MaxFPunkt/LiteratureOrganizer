@@ -3,89 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LitNet — Literature Network</title>
+<meta name="theme-color" content="#ffffff">
+<title>LitNet</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231E6A50'/%3E%3Ccircle cx='10' cy='11' r='3.2' fill='%23fff'/%3E%3Ccircle cx='22' cy='12' r='3.2' fill='%23fff'/%3E%3Ccircle cx='14' cy='22' r='3.2' fill='%23F2DF4B'/%3E%3Cpath d='M12.8 11.6l6.4.3M11 14l2 5.2M20.4 14.5l-4.6 5.4' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E">
 <style>
 /*__CSS__*/
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="bar">
-    <div class="logo">Lit<span>Net</span></div>
-    <button id="btnAdd" class="primary" title="Add a paper — manually or from BibLaTeX"><span class="ic">＋</span><span class="lbl">Add ▾</span></button>
-    <button id="btnLink" title="Link mode (L) — click two papers"><span class="ic">🔗</span><span class="lbl">Link</span></button>
-    <button id="btnLayout" title="Layouts, edge-bundling & saved layouts"><span class="ic">⤢</span><span class="lbl">Layout ▾</span></button>
-    <button id="btnFit" title="Fit to view (F)"><span class="ic">⊡</span><span class="lbl">Fit</span></button>
-    <button id="btnLabels" title="Show/hide all annotation labels (T)"><span class="ic">🏷</span><span class="lbl">Labels</span></button>
-    <button id="btnShape" title="Switch all nodes between cards and circles"><span class="ic">▭</span><span class="lbl">Cards</span></button>
-    <input id="search" placeholder="Search title / author / notes…" />
-    <span class="spacer"></span>
-    <span id="fname"></span>
-    <span id="stats" class="count"></span>
-    <button id="btnOpen" title="Open a .json file to edit"><span class="ic">📂</span><span class="lbl">Open</span></button>
-    <button id="btnSave" title="Save to file (Ctrl/Cmd+S)"><span class="ic">💾</span><span class="lbl">Save</span></button>
-    <button id="btnExport" title="Export / Save As / BibLaTeX"><span class="ic">📤</span><span class="lbl">Export ▾</span></button>
-    <button id="btnSide" title="Toggle the notes panel">⮜</button>
-  </div>
+  <header id="bar">
+    <div class="doc">
+      <span class="brand">LitNet</span>
+      <span class="docname" id="fname" title="Library name">Untitled library</span>
+      <span class="dirty-dot" id="dirtyMark" title="Unsaved changes" style="visibility:hidden"></span>
+    </div>
+
+    <div class="group" role="group" aria-label="Library file">
+      <button id="btnNew" class="tb" title="New library"><span data-icon="fileNew"></span><span class="lbl">New</span></button>
+      <button id="btnOpen" class="tb" title="Open a library file (.json)"><span data-icon="open"></span><span class="lbl">Open</span></button>
+      <button id="btnSave" class="tb" title="Save (Ctrl/Cmd+S)"><span data-icon="save"></span><span class="lbl">Save</span></button>
+      <button id="btnExport" class="tb" title="Save as, BibLaTeX and related-work export" aria-haspopup="menu"><span data-icon="export"></span><span class="lbl">Export</span><span class="chev" data-icon="chevron"></span></button>
+      <button id="btnFile" class="tb" title="File: new, open, save, export" aria-haspopup="menu"><span data-icon="draft"></span><span class="lbl">File</span></button>
+    </div>
+
+    <div class="group" role="group" aria-label="Papers">
+      <button id="btnAdd" class="tb primary" title="Add papers" aria-haspopup="menu"><span data-icon="plus"></span><span class="lbl">Add</span><span class="chev" data-icon="chevron"></span></button>
+      <button id="btnLink" class="tb" title="Link mode (L) — click the citing paper, then the cited one" aria-pressed="false"><span data-icon="link"></span><span class="lbl">Link</span></button>
+    </div>
+
+    <div class="group" role="group" aria-label="View">
+      <button id="btnLayout" class="tb" title="Layouts, edge bundling and saved layouts" aria-haspopup="menu"><span data-icon="layout"></span><span class="lbl">Layout</span><span class="chev" data-icon="chevron"></span></button>
+      <button id="btnLabels" class="tb" title="Show all link notes (T)" aria-pressed="false"><span data-icon="label"></span><span class="lbl">Link notes</span></button>
+      <button id="btnShape" class="tb" title="Draw all papers as cards or circles"><span class="ic"></span><span class="lbl">Cards</span></button>
+    </div>
+
+    <label class="searchbox" title="Search titles, authors, notes and link notes. Start with # to filter by tag.">
+      <span data-icon="search"></span>
+      <input id="search" type="search" placeholder="Search papers and notes" autocomplete="off" spellcheck="false">
+    </label>
+
+    <button id="btnSide" class="tb icon-only" title="Hide the paper panel" aria-pressed="true"><span data-icon="panel"></span></button>
+  </header>
+
   <div id="main">
     <div id="graphWrap">
-      <canvas id="cv"></canvas>
-      <div id="tip"></div>
+      <canvas id="cv" aria-label="Citation network"></canvas>
+      <div id="tip" role="tooltip"></div>
       <div id="hint"></div>
-      <button id="infoBtn" title="Legend & tips">ⓘ</button>
-      <button id="legendBtn" title="Colour legend — name your colours, click a swatch to filter">🎨</button>
-      <div id="legendPop" class="menu"></div>
-      <div id="infoPop" class="menu"></div>
+
+      <div id="empty" class="empty-state" hidden>
+        <h2>This library is empty</h2>
+        <p>Add papers one at a time, paste a BibLaTeX export from Zotero, or open a library file you saved earlier.</p>
+        <div class="empty-actions">
+          <button class="primary" data-empty="manual"><span data-icon="edit"></span>Add a paper</button>
+          <button data-empty="bib"><span data-icon="import"></span>Paste BibLaTeX</button>
+          <button data-empty="open"><span data-icon="open"></span>Open a file</button>
+        </div>
+      </div>
+
+      <div class="canvas-ctl" role="toolbar" aria-label="View controls">
+        <div class="ctl-group">
+          <button id="zoomIn" title="Zoom in"><span data-icon="plus"></span></button>
+          <button id="zoomOut" title="Zoom out"><span data-icon="minus"></span></button>
+          <button id="btnFit" title="Fit all papers in view (F)"><span data-icon="fit"></span></button>
+        </div>
+        <div class="ctl-group">
+          <button id="legendBtn" title="Colour legend"><span data-icon="legend"></span></button>
+          <button id="infoBtn" title="Help and keyboard shortcuts"><span data-icon="help"></span></button>
+        </div>
+      </div>
+      <div id="stats" aria-live="polite"></div>
+
+      <div id="legendPop" class="menu pop"></div>
+      <div id="infoPop" class="menu pop help"></div>
     </div>
-    <div id="side"><div class="inner" id="sideInner"></div></div>
+    <aside id="side" aria-label="Paper details"><div class="inner" id="sideInner"></div></aside>
   </div>
 </div>
 
-<div id="addMenu" class="menu"></div>
-<div id="layoutMenu" class="menu"></div>
-<div id="exportMenu" class="menu"></div>
-<div id="toast"></div>
+<div id="addMenu" class="menu" role="menu"></div>
+<div id="layoutMenu" class="menu" role="menu"></div>
+<div id="exportMenu" class="menu" role="menu"></div>
+<div id="toast" role="status"></div>
 
-<div class="modal" id="bibModal">
+<div class="modal" id="bibModal" role="dialog" aria-modal="true" aria-labelledby="bibTitle">
   <div class="box">
-    <h2>Import BibLaTeX</h2>
-    <p class="meta">Paste from Zotero (right-click items → Export → BibLaTeX, or “Copy as BibLaTeX”). Duplicate keys or DOIs are skipped.</p>
-    <textarea id="bibText" rows="14" placeholder="@article{smith2020, title={...}, author={Smith, Jane and Doe, John}, year={2020}, ... }"></textarea>
-    <div class="count" id="bibCount"></div>
-    <div class="actions">
+    <div class="box-head"><h2 id="bibTitle">Paste BibLaTeX</h2><button class="close" onclick="closeModal('bibModal')" title="Close"><span data-icon="x"></span></button></div>
+    <p class="help-text">In Zotero, select items and use Export or “Copy as BibLaTeX”, then paste here. Entries whose key or DOI is already in the library are skipped. New papers are placed in free space; your layout stays as it is.</p>
+    <textarea id="bibText" rows="14" spellcheck="false" placeholder="@article{smith2020,&#10;  title  = {…},&#10;  author = {Smith, Jane and Doe, John},&#10;  year   = {2020}&#10;}"></textarea>
+    <div class="box-foot">
+      <span class="count" id="bibCount"></span>
       <button onclick="closeModal('bibModal')">Cancel</button>
-      <button class="primary" id="bibDo">Parse & Add</button>
+      <button class="primary" id="bibDo">Add papers</button>
     </div>
   </div>
 </div>
 
-<div class="modal" id="paperModal">
+<div class="modal" id="paperModal" role="dialog" aria-modal="true" aria-labelledby="paperModalTitle">
   <div class="box">
-    <h2 id="paperModalTitle">Add Paper</h2>
-    <div class="field"><label>Title</label><input id="pTitle"></div>
-    <div class="field"><label>Authors (separate with " and ")</label><input id="pAuthors"></div>
-    <div style="display:flex;gap:10px">
-      <div class="field" style="flex:1"><label>Year</label><input id="pYear"></div>
-      <div class="field" style="flex:2"><label>Venue / Journal</label><input id="pVenue"></div>
+    <div class="box-head"><h2 id="paperModalTitle">Add paper</h2><button class="close" onclick="closeModal('paperModal')" title="Close"><span data-icon="x"></span></button></div>
+    <div class="field"><label for="pDoi">DOI, arXiv ID or URL</label>
+      <div class="field-row"><input id="pDoi" placeholder="10.48550/arXiv.1706.03762" spellcheck="false"><button id="pFetch" title="Fill empty fields from OpenAlex"><span data-icon="download"></span><span class="lbl">Fetch details</span></button></div>
     </div>
-    <div class="field"><label>DOI / URL / arXiv ID</label><div style="display:flex;gap:6px"><input id="pDoi" style="flex:1"><button id="pFetch" title="Fetch title/authors/year/venue from OpenAlex">⤓ Fetch</button></div></div>
-    <div class="field"><label>Notes / Summary</label><textarea id="pNote" rows="4"></textarea></div>
-    <div class="actions">
+    <div class="field"><label for="pTitle">Title</label><input id="pTitle"></div>
+    <div class="field"><label for="pAuthors">Authors</label><input id="pAuthors" placeholder="Separate names with commas"></div>
+    <div class="field-row">
+      <div class="field" style="flex:1"><label for="pYear">Year</label><input id="pYear" inputmode="numeric"></div>
+      <div class="field" style="flex:3"><label for="pVenue">Venue or journal</label><input id="pVenue"></div>
+    </div>
+    <div class="field"><label for="pNote">Notes</label><textarea id="pNote" rows="4" placeholder="Key claim, method, result, why it matters"></textarea></div>
+    <div class="box-foot">
       <button onclick="closeModal('paperModal')">Cancel</button>
-      <button class="primary" id="paperDo">Save</button>
+      <button class="primary" id="paperDo">Save paper</button>
     </div>
   </div>
 </div>
 
-<div class="modal" id="confirmModal">
-  <div class="box">
-    <h2>Confirm</h2>
-    <p class="meta" id="confirmMsg"></p>
-    <div class="actions" id="confirmBtns"></div>
+<div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="box narrow">
+    <div class="box-head"><h2 id="confirmTitle">Confirm</h2></div>
+    <p class="help-text" id="confirmMsg"></p>
+    <div class="box-foot" id="confirmBtns"></div>
   </div>
 </div>
 
-<input type="file" id="fileIn" accept="application/json,.json" style="display:none">
+<input type="file" id="fileIn" accept="application/json,.json" hidden>
 
 <script>
 //__JS__

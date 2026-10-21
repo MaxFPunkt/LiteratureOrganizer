@@ -1,5 +1,3 @@
-
-"use strict";
 /* ============================ BibLaTeX parser ============================ */
 function stripBraces(s){
   if(s==null) return "";

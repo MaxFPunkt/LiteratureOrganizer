@@ -116,12 +116,12 @@ function layoutTimeline(){
   finalizeLayout();
 }
 const LAYOUTS=[
-  {id:"radial", name:"Radial", desc:"hub at centre, rings by citation depth", fn:layoutRadial},
-  {id:"layered",name:"Layered", desc:"left → right by citation depth", fn:layoutLayered},
-  {id:"circle", name:"Single circle", desc:"one ring + edge bundling", fn:layoutCircle},
-  {id:"grid",   name:"Grid", desc:"tidy grid, most-cited first", fn:layoutGrid},
-  {id:"force",  name:"Force-directed", desc:"organic clusters (one-shot)", fn:layoutForce},
-  {id:"timeline",name:"Timeline", desc:"columns by year, oldest → newest", fn:layoutTimeline},
+  {id:"radial", name:"Radial", desc:"The most-citing paper in the centre, rings by citation distance", fn:layoutRadial},
+  {id:"layered",name:"Layered", desc:"Left to right by citation depth", fn:layoutLayered},
+  {id:"circle", name:"Single circle", desc:"One ring, links bundled together", fn:layoutCircle},
+  {id:"grid",   name:"Grid", desc:"Rows and columns, most cited first", fn:layoutGrid},
+  {id:"force",  name:"Force-directed", desc:"Organic clusters, computed once", fn:layoutForce},
+  {id:"timeline",name:"Timeline", desc:"Columns by year, oldest first", fn:layoutTimeline},
 ];
 function runLayout(id){ const L=LAYOUTS.find(x=>x.id===id); if(L){ lastLayout=id; heb=null; L.fn(); renderLayoutMenu(); } }
 function arrange(){ runLayout(lastLayout||"radial"); }

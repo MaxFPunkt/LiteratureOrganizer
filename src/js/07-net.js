@@ -22,8 +22,8 @@ function oaCountLinks(byOaId,refs){
 }
 async function runAutoLink(){
   const cand=state.papers.map(p=>({p,doi:realDoi(p.doi)})).filter(x=>x.doi);
-  if(cand.length<2){ toast("Need at least 2 papers with DOIs or arXiv IDs"); return; }
-  toast(`Looking up ${cand.length} papers on OpenAlex…`);
+  if(cand.length<2){ toast("Finding links needs at least two papers with a DOI or arXiv ID"); return; }
+  toast(`Looking up ${cand.length} papers on OpenAlex…`); const btnA=document.getElementById("btnAdd"); btnA.disabled=true;
   try{
     let allResults=[];
     for(let i=0;i<cand.length;i+=40){
@@ -35,28 +35,29 @@ async function runAutoLink(){
     }
     const {byOaId,refs}=oaMatchRefs(allResults,cand);
     const links=oaCountLinks(byOaId,refs);
-    if(!links.length){ toast(`No new links found (${byOaId.size}/${cand.length} papers matched on OpenAlex)`); return; }
+    if(!links.length){ toast(`No new links found. OpenAlex recognised ${byOaId.size} of ${cand.length} papers.`); return; }
     pushUndo();
     let n=0; for(const [a,b] of links){ if(addEdge(a,b)) n++; }
     save(); updateStats(); renderSide(); requestDraw();
-    toast(`Auto-link: added ${n} citation link${n===1?"":"s"} (${byOaId.size}/${cand.length} papers matched)`);
-  }catch(err){ console.warn(err); toast("OpenAlex lookup failed — check your connection and try again"); }
+    toast(`Added ${n} citation link${n===1?"":"s"}. OpenAlex recognised ${byOaId.size} of ${cand.length} papers.`);
+  }catch(err){ console.warn(err); toast("Could not reach OpenAlex. Check your internet connection and try again."); }
+  finally{ btnA.disabled=false; }
 }
 async function fetchDoiMeta(){
   const doi=realDoi(document.getElementById("pDoi").value);
-  if(!doi){ toast("Enter a DOI or arXiv ID first"); return; }
-  const btn=document.getElementById("pFetch"); btn.disabled=true; btn.textContent="…";
+  if(!doi){ toast("Enter a DOI or arXiv ID first, for example 10.1145/3292500"); return; }
+  const btn=document.getElementById("pFetch"); const orig=btn.innerHTML; btn.disabled=true; btn.querySelector(".lbl").textContent="Fetching…";
   try{
     const res=await fetch(`${OA}/works/doi:${doi}?${OA_MAILTO}`);
-    if(!res.ok){ toast("Not found on OpenAlex"); return; }
+    if(!res.ok){ toast("OpenAlex has no record for that DOI"); return; }
     const w=await res.json();
     const fill=(id,v)=>{ const el=document.getElementById(id); if(v && !el.value.trim()) el.value=v; };
     fill("pTitle", w.title||"");
     fill("pAuthors",(w.authorships||[]).map(a=>a.author&&a.author.display_name).filter(Boolean).join(", "));
     fill("pYear", w.publication_year? String(w.publication_year):"");
     fill("pVenue", (w.primary_location&&w.primary_location.source&&w.primary_location.source.display_name)||"");
-    toast("Metadata filled from OpenAlex (empty fields only)");
-  }catch(err){ console.warn(err); toast("Lookup failed — offline?"); }
-  finally{ btn.disabled=false; btn.textContent="⤓ Fetch"; }
+    toast("Filled in the empty fields from OpenAlex");
+  }catch(err){ console.warn(err); toast("Could not reach OpenAlex. Check your internet connection."); }
+  finally{ btn.disabled=false; btn.innerHTML=orig; }
 }
 document.getElementById("pFetch").onclick=fetchDoiMeta;

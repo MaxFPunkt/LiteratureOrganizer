@@ -4,228 +4,474 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LitNet — Literature Network</title>
+<meta name="theme-color" content="#ffffff">
+<title>LitNet</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231E6A50'/%3E%3Ccircle cx='10' cy='11' r='3.2' fill='%23fff'/%3E%3Ccircle cx='22' cy='12' r='3.2' fill='%23fff'/%3E%3Ccircle cx='14' cy='22' r='3.2' fill='%23F2DF4B'/%3E%3Cpath d='M12.8 11.6l6.4.3M11 14l2 5.2M20.4 14.5l-4.6 5.4' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E">
 <style>
 
-  :root{
-    --bg1:#fbfcff; --bg2:#eaf0fb; --ink:#232a40; --muted:#6b7488;
-    --line:#dde3ef; --card:#ffffff; --accent:#6c8cff; --accentPress:#5577f0;
-    --warm:#ff8a5b; --good:#1fa971; --danger:#e8556b; --panel:#ffffff;
-    --shadow:0 6px 18px rgba(40,55,95,.10);
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%;color:var(--ink);
-    font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden;
-    background:linear-gradient(160deg,var(--bg1),var(--bg2));}
-  button{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);
-    padding:7px 12px;border-radius:9px;cursor:pointer;box-shadow:0 1px 2px rgba(40,55,95,.05);transition:.12s}
-  button:hover{border-color:var(--accent);transform:translateY(-1px)}
-  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  button.primary:hover{background:var(--accentPress)}
-  button.active{background:var(--warm);border-color:var(--warm);color:#fff;font-weight:600;
-    box-shadow:0 0 0 4px rgba(255,138,91,.18)}
-  input,textarea{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);
-    border-radius:9px;padding:8px 10px;width:100%}
-  input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,140,255,.15)}
-  textarea{resize:vertical}
-  a{color:var(--accent)}
-  #app{display:flex;flex-direction:column;height:100%}
-  #bar{display:flex;gap:8px;align-items:center;padding:10px 14px;background:rgba(255,255,255,.85);
-    backdrop-filter:blur(6px);border-bottom:1px solid var(--line);flex-wrap:wrap;z-index:5}
-  #bar .logo{font-weight:800;letter-spacing:.2px;margin-right:6px;font-size:16px}
-  #bar .logo span{color:var(--accent)}
-  #bar .spacer{flex:1}
-  #fname{color:var(--muted);font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #search{max-width:190px}
-  #main{flex:1;display:flex;min-height:0}
-  #graphWrap{flex:1;position:relative;min-width:0}
-  canvas{display:block;width:100%;height:100%;cursor:grab}
-  canvas.linking{cursor:crosshair}
-  #tip{position:absolute;pointer-events:none;max-width:280px;background:#232a40;color:#fff;
-    border-radius:10px;padding:9px 11px;font-size:12.5px;line-height:1.4;box-shadow:var(--shadow);
-    display:none;z-index:20}
-  #tip .tt{font-weight:700;margin-bottom:3px;font-size:12px}
-  #tip .tn{color:#cdd6ee;white-space:pre-wrap}
-  #tip .tnone{color:#9aa6c4;font-style:italic}
-  #hint{position:absolute;top:12px;left:14px;background:rgba(255,255,255,.9);border:1px solid var(--line);
-    border-radius:10px;padding:8px 12px;color:var(--muted);pointer-events:none;max-width:62%;box-shadow:var(--shadow)}
-  #hint b{color:var(--warm)}
-  #legend{position:absolute;bottom:12px;left:14px;background:rgba(255,255,255,.9);border:1px solid var(--line);
-    border-radius:10px;padding:9px 12px;color:var(--muted);font-size:12px;box-shadow:var(--shadow)}
-  #legend .row{display:flex;align-items:center;gap:8px;margin:3px 0}
-  #legend .sw{width:22px;height:14px;border-radius:4px;border:1px solid var(--line)}
-  #side{width:370px;background:var(--panel);border-left:1px solid var(--line);display:flex;
-    flex-direction:column;min-height:0;box-shadow:-4px 0 18px rgba(40,55,95,.05)}
-  #side.collapsed{width:0;overflow:hidden;border:none;box-shadow:none}
-  #side .inner{padding:16px;overflow:auto}
-  #side h2{margin:0 0 3px;font-size:17px;line-height:1.3}
-  .meta{color:var(--muted);font-size:13px;margin:2px 0}
-  .section{margin-top:16px}
-  .section h3{margin:0 0 7px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
-  .reflist{list-style:none;margin:0;padding:0}
-  .refitem{padding:7px 9px;background:#f7f9fd;border:1px solid var(--line);border-radius:9px;margin-bottom:6px}
-  .refitem .top{display:flex;justify-content:space-between;gap:6px;align-items:center}
-  .refitem .lbl{cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-  .refitem .lbl:hover{color:var(--accent)}
-  .refitem .x{padding:1px 7px;background:transparent;border:none;color:var(--muted);box-shadow:none}
-  .refitem .x:hover{color:var(--danger);transform:none}
-  .refitem input.rel{margin-top:5px;font-size:12.5px;padding:5px 8px;background:#fff}
-  .empty{color:var(--muted);font-style:italic}
-  .pill{display:inline-block;background:var(--warm);color:#fff;border-radius:20px;padding:1px 9px;font-size:11px;font-weight:700}
-  .menu{position:fixed;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
-    padding:8px;display:none;z-index:60;min-width:250px;max-height:78vh;overflow:auto}
-  .menu.open{display:block}
-  .menu h4{margin:8px 8px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
-  .menu button.item{display:block;width:100%;text-align:left;border:none;box-shadow:none;background:transparent;
-    padding:8px 9px;border-radius:7px}
-  .menu button.item:hover{background:#f0f4fd;transform:none;border:none}
-  .menu button.item small{color:var(--muted);font-weight:400}
-  .menu .bm{display:flex;align-items:center;gap:4px}
-  .menu .bm .nm{flex:1;cursor:pointer;padding:7px 9px;border-radius:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .menu .bm .nm:hover{background:#f0f4fd}
-  .menu .bm button{padding:3px 8px;box-shadow:none}
-  .menu .saverow{display:flex;gap:6px;margin:8px}
-  .menu .saverow input{flex:1}
-  .menu .divider{height:1px;background:var(--line);margin:8px 4px}
-  .menu .ctl{margin:6px 8px}
-  .menu .ctl label{font-size:12px;color:var(--muted);display:block;margin-bottom:3px}
-  .menu .ctl input[type=range]{width:100%;padding:0}
-  .modal{position:fixed;inset:0;background:rgba(30,40,70,.35);backdrop-filter:blur(2px);display:none;
-    align-items:center;justify-content:center;z-index:50}
-  .modal.open{display:flex}
-  .modal .box{background:#fff;border:1px solid var(--line);border-radius:16px;width:min(680px,92vw);
-    max-height:88vh;overflow:auto;padding:20px;box-shadow:var(--shadow)}
-  .modal h2{margin:0 0 10px}
-  .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-  .field{margin-bottom:10px}
-  .field label{display:block;color:var(--muted);font-size:12px;margin-bottom:3px}
-  .count{color:var(--muted);font-size:12px}
-  kbd{background:#eef2fb;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px}
-  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#232a40;color:#fff;
-    padding:9px 16px;border-radius:10px;box-shadow:var(--shadow);font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:80}
-  #toast.show{opacity:1}
-  #bar .ic{font-size:15px;line-height:1}
-  #bar button .lbl{margin-left:5px}
-  .menu{max-width:calc(100vw - 20px)}
-  @media (max-width:900px){
-    #bar{gap:6px;padding:8px 10px}
-    #bar button .lbl{display:none}
-    #bar button{padding:7px 9px}
-    #bar .logo{font-size:14px;margin-right:2px}
-    #stats{display:none}
-    #fname{max-width:84px}
-    #search{flex:1 1 110px;max-width:none;min-width:80px}
-    #main{position:relative}
-    #side{position:absolute;top:0;right:0;height:100%;width:min(340px,90vw);z-index:30;
-      border-left:1px solid var(--line);box-shadow:-10px 0 28px rgba(40,55,95,.18);transition:transform .22s ease}
-    #side.collapsed{width:min(340px,90vw);transform:translateX(106%);overflow:hidden}
-  }
-  @media (max-width:560px){
-    #bar .logo{display:none}
-    #fname{display:none}
-  }
-  #infoBtn{position:absolute;bottom:12px;left:14px;width:34px;height:34px;border-radius:50%;display:flex;
-    align-items:center;justify-content:center;font-size:17px;font-weight:700;color:var(--accent);
-    background:rgba(255,255,255,.94);box-shadow:var(--shadow);z-index:6;padding:0;border:1px solid var(--line);cursor:pointer}
-  #infoBtn:hover{border-color:var(--accent)}
-  #infoPop h4{margin:8px 8px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
-  #infoPop .row{display:flex;align-items:center;gap:8px;margin:5px 8px;font-size:12px;color:var(--muted)}
-  #infoPop .sw{width:22px;height:14px;border-radius:4px;border:1px solid var(--line);flex:none}
-  #infoPop .t{margin:5px 8px;font-size:12px;color:var(--muted);line-height:1.45}
-  #btnSave{position:relative}
-  #btnSave.dirty::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;
-    background:var(--warm);border:2px solid #fff}
-  #legendBtn{position:absolute;bottom:54px;left:14px;width:34px;height:34px;border-radius:50%;display:flex;
-    align-items:center;justify-content:center;font-size:15px;padding:0;background:rgba(255,255,255,.94);
-    box-shadow:var(--shadow);z-index:6;border:1px solid var(--line);cursor:pointer}
-  #legendBtn:hover{border-color:var(--accent)}
-  #legendPop input{margin:0}
+:root{
+  /* palette */
+  --paper:#F4F6F5;        /* canvas */
+  --surface:#FFFFFF;      /* toolbar, panel, menus */
+  --sunken:#EEF1EF;       /* inputs on hover, segmented tracks */
+  --ink:#1C2421;          /* primary text */
+  --ink-2:#55615C;        /* secondary text */
+  --ink-3:#86918C;        /* tertiary text, placeholders */
+  --rule:#D9DFDC;         /* borders */
+  --rule-2:#E7ECE9;       /* inner dividers */
+  --accent:#1E6A50;       /* actions, selection */
+  --accent-hover:#175540;
+  --accent-tint:#E3F0EA;
+  --marker:#F2DF4B;       /* highlighter: search hits, pinned notes */
+  --marker-soft:#FBF4B8;
+  --danger:#A63A2B;
+  --danger-tint:#F7E6E3;
+  /* type */
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --serif:Charter,"Bitstream Charter","Iowan Old Style",Georgia,"Palatino Linotype",Palatino,serif;
+  /* shape */
+  --r-sm:6px; --r-md:8px; --r-lg:12px;
+  --shadow-pop:0 1px 2px rgba(28,36,33,.06),0 8px 24px rgba(28,36,33,.12);
+  --bar-h:52px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);
+  font:13.5px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+.icon{width:18px;height:18px;flex:none;display:block}
+a{color:var(--accent);text-underline-offset:2px}
+kbd{font:600 11.5px/1 var(--sans);background:var(--surface);border:1px solid var(--rule);border-bottom-width:2px;
+  border-radius:4px;padding:2px 5px;color:var(--ink-2);white-space:nowrap}
+
+/* ---------- controls ---------- */
+button{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-sm);
+  padding:6px 11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:32px;transition:background-color .12s,border-color .12s,color .12s}
+button:hover{background:var(--sunken)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+button.danger{color:var(--danger)}
+button.danger:hover{background:var(--danger-tint);border-color:#E6C4BE}
+button.ghost{background:transparent;border-color:transparent}
+button.ghost:hover{background:var(--sunken)}
+button[aria-pressed="true"],button.on{background:var(--accent-tint);border-color:#B9D6C9;color:var(--accent)}
+input,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-sm);
+  padding:7px 10px;width:100%}
+input::placeholder,textarea::placeholder{color:var(--ink-3)}
+input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,106,80,.14)}
+textarea{resize:vertical;line-height:1.5}
+input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+input[type=range]{padding:0;border:none;accent-color:var(--accent);background:none}
+input[type=range]:focus{box-shadow:none}
+
+/* ---------- app frame ---------- */
+#app{display:flex;flex-direction:column;height:100%}
+#bar{display:flex;align-items:center;gap:6px;min-height:var(--bar-h);padding:8px 12px;background:var(--surface);
+  border-bottom:1px solid var(--rule);z-index:5;flex-wrap:nowrap}
+.doc{display:flex;align-items:baseline;gap:10px;min-width:0;margin-right:6px;flex:0 1 auto}
+.brand{font:700 15px/1 var(--sans);letter-spacing:-.01em;color:var(--accent)}
+.docname{font:14px/1.2 var(--serif);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.docname.untitled{color:var(--ink-2);font-style:italic}
+.dirty-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-2);flex:none;align-self:center}
+.group{display:flex;align-items:center;gap:2px;padding-left:8px;margin-left:2px;border-left:1px solid var(--rule-2)}
+.doc + .group{border-left:none;padding-left:0}
+.tb{border-color:transparent;background:transparent;padding:6px 9px;color:var(--ink)}
+.tb:hover{background:var(--sunken)}
+.tb .chev .icon{width:14px;height:14px;margin-left:-3px;color:var(--ink-3)}
+.tb.primary{background:var(--accent);color:#fff;margin-right:2px}
+.tb.primary .chev .icon{color:rgba(255,255,255,.8)}
+.tb.primary:hover{background:var(--accent-hover)}
+.tb.icon-only{padding:6px 7px}
+.tb[aria-expanded="true"]{background:var(--sunken)}
+.tb.primary[aria-expanded="true"]{background:var(--accent-hover)}
+.searchbox{flex:1 1 200px;max-width:340px;min-width:120px;margin-left:auto;display:flex;align-items:center;gap:6px;
+  background:var(--sunken);border:1px solid transparent;border-radius:var(--r-sm);padding:0 9px;color:var(--ink-3);cursor:text}
+.searchbox:focus-within{background:var(--surface);border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,106,80,.14)}
+.searchbox .icon{width:16px;height:16px}
+.searchbox input{border:none;background:transparent;padding:7px 0;box-shadow:none;outline:none;min-width:0}
+.searchbox input::-webkit-search-cancel-button{cursor:pointer}
+.searchbox.has-q{background:var(--marker-soft)}
+#btnSide{margin-left:4px}
+
+#main{flex:1;display:flex;min-height:0;position:relative}
+#graphWrap{flex:1;position:relative;min-width:0;background:var(--paper)}
+canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+canvas.linking{cursor:crosshair}
+canvas:active{cursor:grabbing}
+
+/* ---------- canvas overlays ---------- */
+#tip{position:absolute;pointer-events:none;max-width:300px;background:var(--surface);color:var(--ink);
+  border:1px solid var(--rule);border-radius:var(--r-md);padding:9px 11px;box-shadow:var(--shadow-pop);display:none;z-index:20}
+#tip .tt{font:600 13.5px/1.3 var(--serif);margin-bottom:4px}
+#tip .tm{color:var(--ink-2);font-size:12px;margin-bottom:5px}
+#tip .tn{color:var(--ink);font-size:12.5px;white-space:pre-wrap}
+#tip .tnone{color:var(--ink-3);font-size:12.5px;font-style:italic}
+#hint{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
+  border-radius:999px;padding:7px 14px;font-size:12.5px;pointer-events:none;max-width:calc(100% - 24px);
+  box-shadow:var(--shadow-pop);z-index:7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hint b{color:var(--marker);font-weight:600}
+#hint kbd{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+.canvas-ctl{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;z-index:6}
+.ctl-group{display:flex;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-md);
+  box-shadow:0 1px 2px rgba(28,36,33,.06);overflow:hidden}
+.ctl-group button{border:none;border-radius:0;background:transparent;width:34px;height:34px;padding:0;min-height:0}
+.ctl-group button + button{border-left:1px solid var(--rule-2)}
+.ctl-group button:hover{background:var(--sunken)}
+.ctl-group button.on{background:var(--accent-tint);color:var(--accent)}
+#stats{position:absolute;right:12px;bottom:12px;font-size:12px;color:var(--ink-3);pointer-events:none;z-index:6;
+  background:rgba(244,246,245,.85);padding:2px 6px;border-radius:4px}
+.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:24px;z-index:4;pointer-events:none}
+.empty-state > *{pointer-events:auto}
+.empty-state h2{font:500 24px/1.25 var(--serif);margin:0 0 8px;letter-spacing:-.005em}
+.empty-state p{margin:0 0 18px;color:var(--ink-2);max-width:42ch;font-size:14px}
+.empty-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.empty-actions button{padding:8px 14px}
+
+/* ---------- side panel ---------- */
+#side{width:372px;background:var(--surface);border-left:1px solid var(--rule);display:flex;flex-direction:column;min-height:0;flex:none}
+#side.collapsed{display:none}
+#side .inner{padding:18px 18px 28px;overflow:auto;flex:1}
+.p-head{margin-bottom:12px;position:relative}
+.p-head.has-del .p-title{padding-right:38px}
+.head-del{position:absolute;top:-2px;right:-4px;border-color:transparent;background:transparent;padding:5px;min-height:0}
+.head-del:hover{border-color:#E6C4BE}
+.head-del .icon{width:17px;height:17px}
+.p-title{font:600 19px/1.28 var(--serif);margin:0 0 6px;letter-spacing:-.005em;overflow-wrap:anywhere}
+.p-authors{color:var(--ink);margin:0 0 2px}
+.p-meta{color:var(--ink-2);font-size:12.5px;margin:0}
+.p-doi{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;margin-top:4px;word-break:break-all}
+.p-doi .icon{width:13px;height:13px}
+.p-actions{display:flex;gap:5px;flex-wrap:wrap;margin:14px 0 4px}
+.p-actions button{padding:5px 8px;font-size:12.5px;min-height:30px;gap:5px}
+.p-actions .icon{width:15px;height:15px}
+.p-actions .push{margin-left:auto}
+.section{margin-top:20px}
+.section > h3{font:600 12.5px/1.3 var(--sans);margin:0 0 8px;color:var(--ink);display:flex;align-items:baseline;gap:6px}
+.section > h3 .n{color:var(--ink-3);font-weight:400}
+.muted{color:var(--ink-2)}
+.empty{color:var(--ink-3);font-style:italic;margin:0}
+.help-text{color:var(--ink-2);margin:0 0 12px;font-size:13px}
+.note-area{font:14px/1.55 var(--serif);min-height:120px}
+.abstract{font:13px/1.55 var(--serif);color:var(--ink-2);max-height:160px;overflow:auto;margin:0}
+
+/* segmented control */
+.seg{display:flex;background:var(--sunken);border-radius:var(--r-sm);padding:2px;gap:2px}
+.seg button{flex:1;border:none;background:transparent;padding:5px 6px;font-size:12.5px;min-height:28px;color:var(--ink-2);border-radius:4px}
+.seg button:hover{background:rgba(255,255,255,.6);color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(28,36,33,.12)}
+.seg .icon{width:15px;height:15px}
+.st-read[aria-pressed="true"] .icon{color:var(--accent)}
+.st-skimmed[aria-pressed="true"] .icon{color:#9A7A1C}
+
+/* swatches */
+.swatches{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sw{width:22px;height:22px;min-height:0;padding:0;border-radius:50%;border:1px solid rgba(28,36,33,.15);position:relative}
+.sw:hover{filter:brightness(.95)}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+.sw-custom{width:26px;height:24px;padding:0;border:1px solid var(--rule);border-radius:var(--r-sm);background:var(--surface);cursor:pointer}
+.sw-auto{font-size:12px;padding:3px 9px;min-height:24px}
+
+/* reference lists */
+.refs{display:flex;flex-direction:column;gap:6px}
+.ref{border:1px solid var(--rule-2);border-radius:var(--r-md);background:var(--surface);padding:7px 8px 8px 10px}
+.ref-top{display:flex;align-items:flex-start;gap:6px}
+.ref-title{flex:1;min-width:0;cursor:pointer;font:500 13.5px/1.35 var(--serif);color:var(--ink);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ref-title:hover{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.ref-year{color:var(--ink-3);font:12px var(--sans)}
+.ref .x{border:none;background:transparent;padding:2px;min-height:0;color:var(--ink-3);border-radius:4px}
+.ref .x:hover{color:var(--danger);background:var(--danger-tint)}
+.ref .x .icon{width:15px;height:15px}
+.ref input.rel{margin-top:6px;font-size:12.5px;padding:5px 8px;border-color:var(--rule-2);background:var(--paper)}
+.ref input.rel:focus{background:var(--surface);border-color:var(--accent)}
+.ref.simple{padding:7px 10px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule-2);border:1px solid var(--rule-2);border-radius:var(--r-md);overflow:hidden}
+.stat{background:var(--surface);padding:10px 10px 9px}
+.stat b{display:block;font:600 20px/1.1 var(--serif)}
+.stat span{color:var(--ink-2);font-size:12px}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:12.5px;padding:2px 9px;min-height:24px;border-radius:999px;background:var(--sunken);border-color:transparent;color:var(--ink)}
+.tag:hover{background:var(--accent-tint);color:var(--accent)}
+.tag .n{color:var(--ink-3)}
+.cites-arrow{display:flex;align-items:center;gap:6px;color:var(--ink-3);font-size:12px;margin:4px 0 4px 10px}
+.cites-arrow .icon{width:14px;height:14px}
+.tips{margin:0;padding-left:18px;color:var(--ink-2)}
+.tips li{margin:3px 0}
+
+/* ---------- menus & popovers ---------- */
+.menu{position:fixed;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-lg);box-shadow:var(--shadow-pop);
+  padding:6px;display:none;z-index:60;min-width:260px;max-width:calc(100vw - 16px);max-height:min(78vh,640px);overflow:auto}
+.menu.open{display:block}
+#addMenu,#exportMenu{width:300px}
+#layoutMenu{width:330px}
+#legendPop{width:300px}
+.menu.pop{position:absolute}
+.menu h4{font:600 12px/1.3 var(--sans);color:var(--ink-2);margin:8px 10px 4px}
+.menu h4:first-child{margin-top:4px}
+.menu .item{display:flex;width:100%;text-align:left;justify-content:flex-start;align-items:flex-start;border:none;background:transparent;
+  padding:7px 10px;border-radius:var(--r-sm);gap:10px;min-height:0}
+.menu .item:hover,.menu .item:focus-visible{background:var(--sunken);outline:none}
+.menu .item .icon{margin-top:1px;color:var(--ink-2)}
+.menu .item .txt{display:flex;flex-direction:column;min-width:0}
+.menu .item .sub{color:var(--ink-2);font-size:12px}
+.menu .item.current{background:var(--accent-tint)}
+.menu .item.current .icon,.menu .item.current .main{color:var(--accent)}
+.menu .divider{height:1px;background:var(--rule-2);margin:6px 4px}
+.menu .ctl{margin:8px 10px}
+.menu .ctl label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.menu .ctl .range-head{display:flex;justify-content:space-between;color:var(--ink-2);font-size:12.5px;margin-bottom:2px}
+.menu .ctl input[type=range]{width:100%}
+.menu .ctl .sub{color:var(--ink-3);font-size:12px;margin-left:24px;display:block}
+.menu .bm{display:flex;align-items:center;gap:2px;border-radius:var(--r-sm)}
+.menu .bm:hover{background:var(--sunken)}
+.menu .bm .nm{flex:1;cursor:pointer;padding:7px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:10px}
+.menu .bm .nm .icon{color:var(--ink-2);width:16px;height:16px}
+.menu .bm .x{border:none;background:transparent;padding:4px;min-height:0;color:var(--ink-3);margin-right:4px}
+.menu .bm .x:hover{color:var(--danger);background:var(--danger-tint)}
+.menu .bm .x .icon{width:15px;height:15px}
+.menu .saverow{display:flex;gap:6px;margin:6px 6px 4px}
+.menu .note{color:var(--ink-3);font-size:12.5px;margin:2px 10px 6px}
+.legend-row{display:flex;align-items:center;gap:8px;padding:3px 8px}
+.legend-row .sw{flex:none}
+.legend-row input{flex:1;font-size:12.5px;padding:4px 7px;min-width:120px}
+.legend-row .n{color:var(--ink-3);font-size:12px;min-width:16px;text-align:right}
+.help{width:340px}
+.help .key-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:3px 10px;font-size:12.5px}
+.help .key-row span:first-child{color:var(--ink-2)}
+.help .legend-line{display:flex;align-items:center;gap:10px;padding:4px 10px;font-size:12.5px;color:var(--ink-2)}
+.help .legend-line i{flex:none;display:inline-block}
+.help p{margin:4px 10px;color:var(--ink-2);font-size:12.5px}
+
+/* ---------- modals ---------- */
+.modal{position:fixed;inset:0;background:rgba(28,36,33,.32);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.open{display:flex}
+.modal .box{background:var(--surface);border-radius:var(--r-lg);width:min(620px,100%);max-height:90vh;overflow:auto;
+  padding:18px 20px 16px;box-shadow:0 20px 50px rgba(28,36,33,.25)}
+.modal .box.narrow{width:min(440px,100%)}
+.box-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.box-head h2{font:600 18px/1.3 var(--serif);margin:0}
+.box-head .close{border:none;background:transparent;padding:4px;min-height:0;color:var(--ink-2)}
+.box-head .close:hover{background:var(--sunken)}
+.box-foot{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:16px;flex-wrap:wrap}
+.box-foot .count{margin-right:auto;color:var(--ink-2);font-size:12.5px}
+.field{margin-bottom:12px;min-width:0}
+.field label{display:block;font-weight:600;font-size:12.5px;margin-bottom:4px}
+.field-row{display:flex;gap:10px;align-items:flex-end}
+.field-row > input{flex:1}
+#bibText{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* ---------- toast ---------- */
+#toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,8px);background:var(--ink);color:#fff;
+  padding:9px 14px;border-radius:var(--r-md);box-shadow:var(--shadow-pop);font-size:13px;opacity:0;
+  transition:opacity .18s,transform .18s;pointer-events:none;z-index:80;max-width:calc(100vw - 32px)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- responsive ---------- */
+@media (max-width:1240px){
+  .group .tb:not(.primary) .lbl{display:none}
+  .group .tb:not(.primary) .chev{display:none}
+  .tb{padding:6px 7px}
+}
+@media (max-width:900px){
+  #bar{gap:2px;padding:6px 8px}
+  .tb .lbl,.tb .chev{display:none}
+  .tb.primary{padding:6px 8px}
+  .group{padding-left:4px;margin-left:2px}
+  .docname{max-width:120px}
+  .searchbox{min-width:90px}
+  #side{position:absolute;top:0;right:0;height:100%;width:min(360px,92vw);z-index:30;
+    box-shadow:-12px 0 32px rgba(28,36,33,.16);transition:transform .2s ease}
+  #side.collapsed{display:flex;transform:translateX(105%);visibility:hidden;transition:transform .2s ease,visibility 0s .2s}
+  #stats{display:none}
+}
+#btnFile{display:none}
+@media (max-width:640px){
+  .doc{display:none}
+  #btnNew,#btnOpen,#btnSave,#btnExport{display:none}
+  #btnFile{display:inline-flex}
+  .group{border-left:none;padding-left:0}
+  .group[aria-label="View"] #btnShape{display:none}
+  .searchbox{flex:1 1 60px;min-width:44px;padding:0 7px}
+  .canvas-ctl{left:8px;bottom:8px}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+.p-actions .icon-btn{padding:5px 7px}
 
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="bar">
-    <div class="logo">Lit<span>Net</span></div>
-    <button id="btnAdd" class="primary" title="Add a paper — manually or from BibLaTeX"><span class="ic">＋</span><span class="lbl">Add ▾</span></button>
-    <button id="btnLink" title="Link mode (L) — click two papers"><span class="ic">🔗</span><span class="lbl">Link</span></button>
-    <button id="btnLayout" title="Layouts, edge-bundling & saved layouts"><span class="ic">⤢</span><span class="lbl">Layout ▾</span></button>
-    <button id="btnFit" title="Fit to view (F)"><span class="ic">⊡</span><span class="lbl">Fit</span></button>
-    <button id="btnLabels" title="Show/hide all annotation labels (T)"><span class="ic">🏷</span><span class="lbl">Labels</span></button>
-    <button id="btnShape" title="Switch all nodes between cards and circles"><span class="ic">▭</span><span class="lbl">Cards</span></button>
-    <input id="search" placeholder="Search title / author / notes…" />
-    <span class="spacer"></span>
-    <span id="fname"></span>
-    <span id="stats" class="count"></span>
-    <button id="btnOpen" title="Open a .json file to edit"><span class="ic">📂</span><span class="lbl">Open</span></button>
-    <button id="btnSave" title="Save to file (Ctrl/Cmd+S)"><span class="ic">💾</span><span class="lbl">Save</span></button>
-    <button id="btnExport" title="Export / Save As / BibLaTeX"><span class="ic">📤</span><span class="lbl">Export ▾</span></button>
-    <button id="btnSide" title="Toggle the notes panel">⮜</button>
-  </div>
+  <header id="bar">
+    <div class="doc">
+      <span class="brand">LitNet</span>
+      <span class="docname" id="fname" title="Library name">Untitled library</span>
+      <span class="dirty-dot" id="dirtyMark" title="Unsaved changes" style="visibility:hidden"></span>
+    </div>
+
+    <div class="group" role="group" aria-label="Library file">
+      <button id="btnNew" class="tb" title="New library"><span data-icon="fileNew"></span><span class="lbl">New</span></button>
+      <button id="btnOpen" class="tb" title="Open a library file (.json)"><span data-icon="open"></span><span class="lbl">Open</span></button>
+      <button id="btnSave" class="tb" title="Save (Ctrl/Cmd+S)"><span data-icon="save"></span><span class="lbl">Save</span></button>
+      <button id="btnExport" class="tb" title="Save as, BibLaTeX and related-work export" aria-haspopup="menu"><span data-icon="export"></span><span class="lbl">Export</span><span class="chev" data-icon="chevron"></span></button>
+      <button id="btnFile" class="tb" title="File: new, open, save, export" aria-haspopup="menu"><span data-icon="draft"></span><span class="lbl">File</span></button>
+    </div>
+
+    <div class="group" role="group" aria-label="Papers">
+      <button id="btnAdd" class="tb primary" title="Add papers" aria-haspopup="menu"><span data-icon="plus"></span><span class="lbl">Add</span><span class="chev" data-icon="chevron"></span></button>
+      <button id="btnLink" class="tb" title="Link mode (L) — click the citing paper, then the cited one" aria-pressed="false"><span data-icon="link"></span><span class="lbl">Link</span></button>
+    </div>
+
+    <div class="group" role="group" aria-label="View">
+      <button id="btnLayout" class="tb" title="Layouts, edge bundling and saved layouts" aria-haspopup="menu"><span data-icon="layout"></span><span class="lbl">Layout</span><span class="chev" data-icon="chevron"></span></button>
+      <button id="btnLabels" class="tb" title="Show all link notes (T)" aria-pressed="false"><span data-icon="label"></span><span class="lbl">Link notes</span></button>
+      <button id="btnShape" class="tb" title="Draw all papers as cards or circles"><span class="ic"></span><span class="lbl">Cards</span></button>
+    </div>
+
+    <label class="searchbox" title="Search titles, authors, notes and link notes. Start with # to filter by tag.">
+      <span data-icon="search"></span>
+      <input id="search" type="search" placeholder="Search papers and notes" autocomplete="off" spellcheck="false">
+    </label>
+
+    <button id="btnSide" class="tb icon-only" title="Hide the paper panel" aria-pressed="true"><span data-icon="panel"></span></button>
+  </header>
+
   <div id="main">
     <div id="graphWrap">
-      <canvas id="cv"></canvas>
-      <div id="tip"></div>
+      <canvas id="cv" aria-label="Citation network"></canvas>
+      <div id="tip" role="tooltip"></div>
       <div id="hint"></div>
-      <button id="infoBtn" title="Legend & tips">ⓘ</button>
-      <button id="legendBtn" title="Colour legend — name your colours, click a swatch to filter">🎨</button>
-      <div id="legendPop" class="menu"></div>
-      <div id="infoPop" class="menu"></div>
+
+      <div id="empty" class="empty-state" hidden>
+        <h2>This library is empty</h2>
+        <p>Add papers one at a time, paste a BibLaTeX export from Zotero, or open a library file you saved earlier.</p>
+        <div class="empty-actions">
+          <button class="primary" data-empty="manual"><span data-icon="edit"></span>Add a paper</button>
+          <button data-empty="bib"><span data-icon="import"></span>Paste BibLaTeX</button>
+          <button data-empty="open"><span data-icon="open"></span>Open a file</button>
+        </div>
+      </div>
+
+      <div class="canvas-ctl" role="toolbar" aria-label="View controls">
+        <div class="ctl-group">
+          <button id="zoomIn" title="Zoom in"><span data-icon="plus"></span></button>
+          <button id="zoomOut" title="Zoom out"><span data-icon="minus"></span></button>
+          <button id="btnFit" title="Fit all papers in view (F)"><span data-icon="fit"></span></button>
+        </div>
+        <div class="ctl-group">
+          <button id="legendBtn" title="Colour legend"><span data-icon="legend"></span></button>
+          <button id="infoBtn" title="Help and keyboard shortcuts"><span data-icon="help"></span></button>
+        </div>
+      </div>
+      <div id="stats" aria-live="polite"></div>
+
+      <div id="legendPop" class="menu pop"></div>
+      <div id="infoPop" class="menu pop help"></div>
     </div>
-    <div id="side"><div class="inner" id="sideInner"></div></div>
+    <aside id="side" aria-label="Paper details"><div class="inner" id="sideInner"></div></aside>
   </div>
 </div>
 
-<div id="addMenu" class="menu"></div>
-<div id="layoutMenu" class="menu"></div>
-<div id="exportMenu" class="menu"></div>
-<div id="toast"></div>
+<div id="addMenu" class="menu" role="menu"></div>
+<div id="layoutMenu" class="menu" role="menu"></div>
+<div id="exportMenu" class="menu" role="menu"></div>
+<div id="toast" role="status"></div>
 
-<div class="modal" id="bibModal">
+<div class="modal" id="bibModal" role="dialog" aria-modal="true" aria-labelledby="bibTitle">
   <div class="box">
-    <h2>Import BibLaTeX</h2>
-    <p class="meta">Paste from Zotero (right-click items → Export → BibLaTeX, or “Copy as BibLaTeX”). Duplicate keys or DOIs are skipped.</p>
-    <textarea id="bibText" rows="14" placeholder="@article{smith2020, title={...}, author={Smith, Jane and Doe, John}, year={2020}, ... }"></textarea>
-    <div class="count" id="bibCount"></div>
-    <div class="actions">
+    <div class="box-head"><h2 id="bibTitle">Paste BibLaTeX</h2><button class="close" onclick="closeModal('bibModal')" title="Close"><span data-icon="x"></span></button></div>
+    <p class="help-text">In Zotero, select items and use Export or “Copy as BibLaTeX”, then paste here. Entries whose key or DOI is already in the library are skipped. New papers are placed in free space; your layout stays as it is.</p>
+    <textarea id="bibText" rows="14" spellcheck="false" placeholder="@article{smith2020,&#10;  title  = {…},&#10;  author = {Smith, Jane and Doe, John},&#10;  year   = {2020}&#10;}"></textarea>
+    <div class="box-foot">
+      <span class="count" id="bibCount"></span>
       <button onclick="closeModal('bibModal')">Cancel</button>
-      <button class="primary" id="bibDo">Parse & Add</button>
+      <button class="primary" id="bibDo">Add papers</button>
     </div>
   </div>
 </div>
 
-<div class="modal" id="paperModal">
+<div class="modal" id="paperModal" role="dialog" aria-modal="true" aria-labelledby="paperModalTitle">
   <div class="box">
-    <h2 id="paperModalTitle">Add Paper</h2>
-    <div class="field"><label>Title</label><input id="pTitle"></div>
-    <div class="field"><label>Authors (separate with " and ")</label><input id="pAuthors"></div>
-    <div style="display:flex;gap:10px">
-      <div class="field" style="flex:1"><label>Year</label><input id="pYear"></div>
-      <div class="field" style="flex:2"><label>Venue / Journal</label><input id="pVenue"></div>
+    <div class="box-head"><h2 id="paperModalTitle">Add paper</h2><button class="close" onclick="closeModal('paperModal')" title="Close"><span data-icon="x"></span></button></div>
+    <div class="field"><label for="pDoi">DOI, arXiv ID or URL</label>
+      <div class="field-row"><input id="pDoi" placeholder="10.48550/arXiv.1706.03762" spellcheck="false"><button id="pFetch" title="Fill empty fields from OpenAlex"><span data-icon="download"></span><span class="lbl">Fetch details</span></button></div>
     </div>
-    <div class="field"><label>DOI / URL / arXiv ID</label><div style="display:flex;gap:6px"><input id="pDoi" style="flex:1"><button id="pFetch" title="Fetch title/authors/year/venue from OpenAlex">⤓ Fetch</button></div></div>
-    <div class="field"><label>Notes / Summary</label><textarea id="pNote" rows="4"></textarea></div>
-    <div class="actions">
+    <div class="field"><label for="pTitle">Title</label><input id="pTitle"></div>
+    <div class="field"><label for="pAuthors">Authors</label><input id="pAuthors" placeholder="Separate names with commas"></div>
+    <div class="field-row">
+      <div class="field" style="flex:1"><label for="pYear">Year</label><input id="pYear" inputmode="numeric"></div>
+      <div class="field" style="flex:3"><label for="pVenue">Venue or journal</label><input id="pVenue"></div>
+    </div>
+    <div class="field"><label for="pNote">Notes</label><textarea id="pNote" rows="4" placeholder="Key claim, method, result, why it matters"></textarea></div>
+    <div class="box-foot">
       <button onclick="closeModal('paperModal')">Cancel</button>
-      <button class="primary" id="paperDo">Save</button>
+      <button class="primary" id="paperDo">Save paper</button>
     </div>
   </div>
 </div>
 
-<div class="modal" id="confirmModal">
-  <div class="box">
-    <h2>Confirm</h2>
-    <p class="meta" id="confirmMsg"></p>
-    <div class="actions" id="confirmBtns"></div>
+<div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="box narrow">
+    <div class="box-head"><h2 id="confirmTitle">Confirm</h2></div>
+    <p class="help-text" id="confirmMsg"></p>
+    <div class="box-foot" id="confirmBtns"></div>
   </div>
 </div>
 
-<input type="file" id="fileIn" accept="application/json,.json" style="display:none">
+<input type="file" id="fileIn" accept="application/json,.json" hidden>
 
 <script>
-/* ==== src/js/01-bib.js ==== */
-
+/* ==== src/js/00-icons.js ==== */
 "use strict";
+/* ============================ Icons ============================ */
+/* One consistent line-icon set (24px grid, 1.75 stroke). Use ic("name") in JS
+   or <span data-icon="name"></span> in the template. */
+const ICONS={
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  minus:'<path d="M5 12h14"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  layout:'<circle cx="6" cy="6.5" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="9.5" cy="18" r="2.5"/><path d="M8.5 6.8l7 .9M6.7 9l2.1 6.6M16.4 10.1l-5.2 5.8"/>',
+  fit:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  label:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12.5h5"/>',
+  card:'<rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M7 10h7M7 13.5h4"/>',
+  dot:'<circle cx="12" cy="12" r="7.5"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/>',
+  fileNew:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/>',
+  open:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-7H7v7M7 3v4h7"/>',
+  export:'<path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>',
+  import:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>',
+  download:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 20h14"/>',
+  copy:'<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"/>',
+  draft:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+  panel:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4M12 17h.01"/>',
+  legend:'<circle cx="5.5" cy="7" r="1.6"/><circle cx="5.5" cy="12" r="1.6"/><circle cx="5.5" cy="17" r="1.6"/><path d="M10 7h10M10 12h10M10 17h10"/>',
+  chevron:'<path d="M6 9l6 6 6-6"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  focus:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+  pin:'<path d="M12 16v5M8 3h8l-1 6 3 4H6l3-4z"/>',
+  toread:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19"/>',
+  skimmed:'<path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3zM21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/>',
+  read:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  sync:'<path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>',
+  bookmark:'<path d="M6 3h12v18l-6-4-6 4z"/>',
+  external:'<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  arrowDown:'<path d="M12 5v14M6 13l6 6 6-6"/>',
+  undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+  redo:'<path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/>',
+};
+function ic(name,cls){ const d=ICONS[name]; if(!d) return "";
+  return `<svg class="icon${cls?" "+cls:""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`; }
+function hydrateIcons(root){ (root||document).querySelectorAll("[data-icon]").forEach(el=>{ el.innerHTML=ic(el.dataset.icon); el.removeAttribute("data-icon"); }); }
+hydrateIcons();
+
+/* ==== src/js/01-bib.js ==== */
 /* ============================ BibLaTeX parser ============================ */
 function stripBraces(s){
   if(s==null) return "";
@@ -328,7 +574,7 @@ function toBib(){ const used=new Set();
 /* ==== src/js/02-state.js ==== */
 /* ============================ State ============================ */
 const KEY="litnet.v2";
-const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 let state={papers:[], edges:[]};
 let bookmarks=[];
 let showLabels=false;
@@ -344,12 +590,13 @@ let snapOn=true;
 let legendNames={}, colorFilter=null;
 let linkMode=false, linkFirst=null, searchQ="", shiftDown=false;
 let uid=1;
-const PALETTE=["#6C8CFF","#FF8A5B","#34C7A0","#B57BFF","#FFC247","#FF6B9D","#3FB6E6","#9CCB3B","#FF7A7A"];
+/* Muted, print-friendly hues; all hold white text and read on the pale canvas. */
+const PALETTE=["#3E6FB0","#C0623B","#2E8A6E","#7759B0","#C3962A","#B04C79","#2C8DA6","#6F8A35","#A84A4A"];
 function nextId(){ return "p"+(uid++); }
 function inkFor(c){
   if(!/^#[0-9a-fA-F]{6}$/.test(c||"")) return "#ffffff";
   const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);
-  return (0.299*r+0.587*g+0.114*b)>150? "#232a40" : "#ffffff";
+  return (0.299*r+0.587*g+0.114*b)>160? "#1C2421" : "#ffffff";
 }
 function colorFor(p){
   if(p.color) return p.color;
@@ -357,6 +604,7 @@ function colorFor(p){
   for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0;
   return PALETTE[h%PALETTE.length];
 }
+/* Returns true when a stored library was found (used to seed demo papers only on the very first run). */
 function load(){
   try{
     const raw=localStorage.getItem(KEY);
@@ -367,28 +615,37 @@ function load(){
       if(typeof d.snapOn==="boolean") snapOn=d.snapOn;
       if(d.legendNames && typeof d.legendNames==="object") legendNames=d.legendNames;
       uid=d.uid|| (state.papers.reduce((m,p)=>Math.max(m,parseInt((p.id||"p0").slice(1))||0),0)+1);
+      return true;
     }
   }catch(e){ console.warn("load failed",e); }
+  return false;
 }
 function persistObj(){ return {papers:state.papers,edges:state.edges,uid,bookmarks,showLabels,lastLayout,globalShape,bundleStrength,colorByTag,snapOn,legendNames}; }
 let saveTimer=null, dirty=false;
 function markDirty(){ dirty=true; updateDirty(); }
 function markClean(){ dirty=false; updateDirty(); }
-function updateDirty(){ const b=document.getElementById("btnSave"); if(b) b.classList.toggle("dirty",dirty); }
+function updateDirty(){ const d=document.getElementById("dirtyMark"); if(d) d.style.visibility= dirty?"visible":"hidden";
+  const b=document.getElementById("btnSave");
+  if(b) b.title= dirty? (fileHandle? "Save changes to "+currentFileName+" (Ctrl/Cmd+S)" : "Save to a file (Ctrl/Cmd+S)") : "Save (Ctrl/Cmd+S)"; }
+/* Autosave to this browser; "dirty" means the library has changes not yet written to a file. */
 function save(){
   markDirty();
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
-    try{ localStorage.setItem(KEY,JSON.stringify(persistObj())); flashSaved(); }
+    try{ localStorage.setItem(KEY,JSON.stringify(persistObj())); }
     catch(e){ console.warn("save failed",e); }
   },300);
 }
-function flashSaved(){ const el=document.getElementById("stats"); if(el){ el.dataset.saved="1"; updateStats(); setTimeout(()=>{el.dataset.saved="";updateStats();},900);} }
-function updateStats(){ const el=document.getElementById("stats");
-  el.textContent=`${state.papers.length} papers · ${state.edges.length} links${el.dataset.saved?" · saved ✓":""}`; }
-function updateFileName(){ const el=document.getElementById("fname");
-  el.textContent= currentFileName? ("📄 "+currentFileName):"";
-  el.title= fileHandle? "Save / Ctrl+S writes back to this file" : (currentFileName?"Opened a copy — Save downloads a new file":""); }
+function flushSave(){ clearTimeout(saveTimer); try{ localStorage.setItem(KEY,JSON.stringify(persistObj())); }catch(e){} }
+function updateStats(){ const el=document.getElementById("stats"); if(!el) return;
+  const n=state.papers.length, m=state.edges.length;
+  el.textContent= n? `${n} paper${n===1?"":"s"}, ${m} link${m===1?"":"s"}` : ""; }
+function libraryName(){ return currentFileName? currentFileName.replace(/\.json$/i,"") : null; }
+function updateFileName(){ const el=document.getElementById("fname"); const nm=libraryName();
+  el.textContent= nm || "Untitled library";
+  el.classList.toggle("untitled",!nm);
+  el.title= fileHandle? "Saving writes back to "+currentFileName : (nm? "Opened as a copy; saving downloads a new file" : "Not saved to a file yet. Your work is kept in this browser.");
+  document.title= (nm||"Untitled library")+" — LitNet"; }
 
 /* ---- undo ---- */
 let undoStack=[], redoStack=[];
@@ -400,7 +657,7 @@ function editUndo(key){ if(editSession!==key){ pushUndo(); editSession=key; } }
 function applySnapshot(s){
   const d=JSON.parse(s); state.papers=d.papers; state.edges=d.edges; uid=d.uid;
   if(d.globalShape){ globalShape=d.globalShape; if(typeof setShapeBtn==="function") setShapeBtn(); }
-  selId=null; selEdge=null; heb=null; save(); renderSide(); updateStats(); requestDraw(); }
+  selId=null; selEdge=null; selSet.clear(); heb=null; save(); renderSide(); updateStats(); updateHint(); requestDraw(); }
 function undo(){ const s=undoStack.pop(); if(!s) return; redoStack.push(snapshot()); applySnapshot(s); }
 function redo(){ const s=redoStack.pop(); if(!s) return; undoStack.push(snapshot()); applySnapshot(s); }
 
@@ -419,6 +676,7 @@ function deletePaper(id){ selSet.delete(id); if(focusId===id) focusId=null;
   state.papers=state.papers.filter(p=>p.id!==id);
   state.edges=state.edges.filter(e=>e.from!==id&&e.to!==id); if(selId===id) selId=null; heb=null; }
 function effShape(p){ return p.shape || globalShape; }
+function firstAuthor(p){ const a=(p.authors||"").split(",")[0].trim(); return a? a.split(" ").pop() : ""; }
 
 /* ============================ Search ============================ */
 function nodeText(p){ return (p.title+" "+p.authors+" "+p.venue+" "+p.year+" "+(p.note||"")+" "+((p.tags||[]).join(" "))).toLowerCase(); }
@@ -550,13 +808,23 @@ function wrapLines(text,maxW,maxLines){
     if((text.length>lines.join(" ").length)) lines[maxLines-1]=last+"…"; }
   return lines.slice(0,maxLines);
 }
+/* ---- canvas palette (mirrors the CSS tokens) ---- */
+const C={
+  paper:"#F4F6F5", surface:"#FFFFFF", pale:"#F7F9F8", ink:"#1C2421", ink2:"#55615C", ink3:"#86918C",
+  rule:"#D9DFDC", paleStripe:"#C9D1CD", accent:"#1E6A50", accentDark:"#175540",
+  marker:"#F2DF4B", markerSoft:"#FBF4B8", markerEdge:"#D9C52F", read:"#1E6A50", skimmed:"#C3962A",
+  edge:"rgba(85,97,92,.42)", edgeConn:"rgba(30,106,80,.85)",
+};
+const SANS='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+const SERIF='Charter,"Bitstream Charter","Iowan Old Style",Georgia,"Palatino Linotype",Palatino,serif';
+function font(weight,size,family){ return (weight?weight+" ":"")+size.toFixed(1)+"px "+family; }
 function drawGrid(){
   const step=42*view.scale; if(step<14) return;
   const [w0x,w0y]=s2w(0,0);
   const [ox,oy]=w2s(Math.floor(w0x/42)*42, Math.floor(w0y/42)*42);
-  ctx.fillStyle="rgba(120,140,190,.16)";
+  ctx.fillStyle="rgba(28,36,33,.09)";
   for(let x=ox%step; x<W; x+=step){
-    for(let y=oy%step; y<H; y+=step){ ctx.beginPath(); ctx.arc(x,y,1.1,0,6.283); ctx.fill(); }
+    for(let y=oy%step; y<H; y+=step){ ctx.beginPath(); ctx.arc(x,y,1,0,6.283); ctx.fill(); }
   }
 }
 function roundRect(x,y,w,h,r){ r=Math.min(r,w/2,h/2);
@@ -566,169 +834,163 @@ function roundRectLeft(x,y,w,h,r){ r=Math.min(r,h/2);
   ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w,y); ctx.lineTo(x+w,y+h); ctx.lineTo(x+r,y+h);
   ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function strokePolyline(pts){ ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]); ctx.stroke(); }
+/* Highlighter swipe: a slightly ragged marker band behind a search hit. */
+function markerSwipe(x,y,w,h,s){
+  ctx.save(); ctx.fillStyle=C.marker; ctx.globalAlpha*=0.9;
+  ctx.beginPath();
+  ctx.moveTo(x-7*s, y-3*s); ctx.lineTo(x+w+5*s, y-6*s); ctx.lineTo(x+w+8*s, y+h+3*s); ctx.lineTo(x-4*s, y+h+6*s); ctx.closePath();
+  ctx.fill(); ctx.restore();
+}
 function draw(){
   ctx.clearRect(0,0,W,H);
   drawGrid();
   hebPos = bundlingActive()? hebNodePositions() : null;
   const litSet = computeLit();
   const fSet = focusId? focusSet() : null;
+  const s=view.scale;
   const labelJobs=[], nodeRects=[];
+  /* glow halos behind "Glow" papers */
   for(const p of state.papers){
     if(p.emph!=="hi") continue;
     const gcol=colorFor(p); const [gx,gy]=w2s(p.x,p.y);
     const gdim=(litSet? !litSet.has(p.id):false) || (fSet? !fSet.has(p.id):false);
-    ctx.globalAlpha= gdim?0.15:1;
+    ctx.globalAlpha= gdim?0.12:0.55;
     ctx.shadowColor=gcol; ctx.shadowOffsetY=0; ctx.fillStyle=gcol;
     if(effShape(p)==="dot"){
-      const gr=dotR(p)*view.scale;
-      if(!(gx+gr<-60||gx-gr>W+60||gy+gr<-60||gy-gr>H+60)){
-        ctx.shadowBlur=24; ctx.beginPath(); ctx.arc(gx,gy,gr,0,6.283); ctx.fill(); ctx.fill(); ctx.fill(); }
+      const gr=dotR(p)*s;
+      if(!(gx+gr<-60||gx-gr>W+60||gy+gr<-60||gy-gr>H+60)){ ctx.shadowBlur=22; ctx.beginPath(); ctx.arc(gx,gy,gr,0,6.283); ctx.fill(); ctx.fill(); }
     } else {
-      const ghw=CARDW*view.scale, ghh=CARDH*view.scale; const gxx=gx-ghw/2, gyy=gy-ghh/2;
-      if(!(gxx>W+60||gyy>H+60||gxx+ghw<-60||gyy+ghh<-60)){
-        ctx.shadowBlur=26; roundRect(gxx,gyy,ghw,ghh,12*view.scale); ctx.fill(); ctx.fill(); ctx.fill(); }
+      const ghw=CARDW*s, ghh=CARDH*s; const gxx=gx-ghw/2, gyy=gy-ghh/2;
+      if(!(gxx>W+60||gyy>H+60||gxx+ghw<-60||gyy+ghh<-60)){ ctx.shadowBlur=24; roundRect(gxx,gyy,ghw,ghh,8*s); ctx.fill(); ctx.fill(); }
     }
     ctx.shadowBlur=0; ctx.globalAlpha=1;
   }
+  /* edges */
   const q=searchQ.toLowerCase();
   for(const e of state.edges){
     const pts=edgeRenderPts(e); if(!pts||pts.length<2) continue;
     const sel=(selEdge&&selEdge.from===e.from&&selEdge.to===e.to);
     const conn=(selId===e.from||selId===e.to);
     const hov=(hoverEdge&&hoverEdge.from===e.from&&hoverEdge.to===e.to);
-    const lblMatch = litSet && (e.label||"").toLowerCase().includes(q) && q;
+    const lblMatch = !!(litSet && q && !colorFilter && (e.label||"").toLowerCase().includes(q));
     const edim = (litSet && !(litSet.has(e.from)||litSet.has(e.to)) && !lblMatch) || (fSet && !(fSet.has(e.from)&&fSet.has(e.to)));
     ctx.globalAlpha = edim?0.12:1;
-    ctx.strokeStyle= lblMatch? "rgba(31,169,113,.95)" : sel||hov? "rgba(255,138,91,.95)" : conn? "rgba(108,140,255,.85)" : "rgba(90,106,145,.62)";
-    ctx.lineWidth= (lblMatch||sel)?2.8: (conn||hov)?2.4:1.8;
+    if(lblMatch){ ctx.strokeStyle=C.marker; ctx.lineWidth=8; ctx.lineCap="round"; strokePolyline(pts); ctx.lineCap="butt"; }
+    const col= (sel||hov)? C.accentDark : lblMatch? C.ink : conn? C.edgeConn : C.edge;
+    ctx.strokeStyle=col; ctx.lineWidth= (sel||hov)?2.4 : (conn||lblMatch)?1.8 : 1.3;
     strokePolyline(pts);
     const e1=pts[pts.length-1], e0=pts[pts.length-2];
-    const ang=Math.atan2(e1[1]-e0[1], e1[0]-e0[0]); const ah=8.5;
+    const ang=Math.atan2(e1[1]-e0[1], e1[0]-e0[0]); const ah=(sel||hov)?9:7.5;
     ctx.beginPath(); ctx.moveTo(e1[0],e1[1]);
-    ctx.lineTo(e1[0]-Math.cos(ang-.42)*ah, e1[1]-Math.sin(ang-.42)*ah);
-    ctx.lineTo(e1[0]-Math.cos(ang+.42)*ah, e1[1]-Math.sin(ang+.42)*ah);
-    ctx.closePath(); ctx.fillStyle=ctx.strokeStyle; ctx.fill();
+    ctx.lineTo(e1[0]-Math.cos(ang-.4)*ah, e1[1]-Math.sin(ang-.4)*ah);
+    ctx.lineTo(e1[0]-Math.cos(ang+.4)*ah, e1[1]-Math.sin(ang+.4)*ah);
+    ctx.closePath(); ctx.fillStyle=col; ctx.fill();
     const showThis=(showLabels || e.pin || sel || lblMatch || hov);
-    if(e.label && showThis && view.scale>0.45 && !edim){
-      labelJobs.push({e,pts,sel:!!sel,lblMatch:!!lblMatch,hov:!!hov});
-    }
+    if(e.label && showThis && s>0.45 && !edim) labelJobs.push({e,pts,sel:!!sel,lblMatch,hov:!!hov});
     ctx.globalAlpha=1;
   }
+  /* papers */
   for(const p of state.papers){
     const dim = (litSet? !litSet.has(p.id) : false) || (fSet? !fSet.has(p.id) : false);
-    const lit = litSet? litSet.has(p.id) : false;
-    const hasNote=p.note && p.note.trim();
+    const lit = !!(litSet && litSet.has(p.id));
+    const hasNote=!!(p.note && p.note.trim());
     const col=colorFor(p);
-    const isSel=p.id===selId, isHover=p.id===hoverId, isLF=p.id===linkFirst;
+    const isSel=p.id===selId, isHover=p.id===hoverId, isLF=p.id===linkFirst, inSel=selSet.has(p.id);
+    const hero=p.emph==="hero";
     const [cx,cy]=w2s(p.x,p.y);
-    ctx.globalAlpha= dim?0.22: (p.emph==="low"?0.45:1);
+    ctx.globalAlpha= dim?0.2 : (p.emph==="low"?0.45:1);
     if(effShape(p)==="dot"){
-      const r=dotR(p)*view.scale;
-      nodeRects.push([cx-r,cy-r,2*r,2*r]);
-      if(cx+r<0||cx-r>W||cy+r<0||cy-r>H){ ctx.globalAlpha=1; continue; }
-      if(lit){ ctx.beginPath(); ctx.arc(cx,cy,r+4,0,6.283); ctx.strokeStyle="rgba(31,169,113,.95)"; ctx.lineWidth=3; ctx.stroke(); }
+      const r=dotR(p)*s;
+      nodeRects.push([cx-r,cy-r,2*r,2*r+16]);
+      if(cx+r<-40||cx-r>W+40||cy+r<-40||cy-r>H+40){ ctx.globalAlpha=1; continue; }
+      if(lit){ ctx.beginPath(); ctx.arc(cx,cy,r+7*Math.max(s,.6),0,6.283); ctx.fillStyle=C.marker; ctx.fill(); }
+      if(hero){ ctx.beginPath(); ctx.arc(cx,cy,r+5,0,6.283); ctx.strokeStyle=col; ctx.lineWidth=2; ctx.stroke(); }
       ctx.beginPath(); ctx.arc(cx,cy,r,0,6.283);
-      ctx.fillStyle= hasNote? col : "#cdd6e8";
-      ctx.shadowColor="rgba(40,55,95,.18)"; ctx.shadowBlur=isSel?14:6; ctx.shadowOffsetY=2; ctx.fill();
+      ctx.fillStyle= hasNote||hero? col : C.paleStripe;
+      ctx.shadowColor="rgba(28,36,33,.16)"; ctx.shadowBlur=isSel?10:4; ctx.shadowOffsetY=1; ctx.fill();
       ctx.shadowBlur=0; ctx.shadowOffsetY=0;
-      const inSelD=selSet.has(p.id);
-      ctx.lineWidth= (isSel||inSelD)?3:isLF?3:isHover?2:1.2;
-      ctx.strokeStyle= isLF?"#ff8a5b": inSelD?"#6C8CFF": isSel?"#232a40": "rgba(255,255,255,.85)"; ctx.stroke();
-      if(p.status && p.status!=="toread" && view.scale>0.4){
-        const sc= p.status==="read"?"#34c7a0":"#ffc247";
-        ctx.beginPath(); ctx.arc(cx+r*0.75, cy-r*0.75, Math.max(3.5,4.5*view.scale), 0, 6.283);
-        ctx.fillStyle=sc; ctx.fill(); ctx.strokeStyle="#fff"; ctx.lineWidth=1.2; ctx.stroke();
+      ctx.lineWidth=2; ctx.strokeStyle=C.surface; ctx.stroke();
+      if(isSel||inSel||isLF){ ctx.beginPath(); ctx.arc(cx,cy,r+3.5,0,6.283); ctx.lineWidth=2; ctx.strokeStyle=C.accent;
+        if(isLF) ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]); }
+      else if(isHover){ ctx.beginPath(); ctx.arc(cx,cy,r+3,0,6.283); ctx.lineWidth=1.5; ctx.strokeStyle=C.ink3; ctx.stroke(); }
+      const cited=inDegree(p.id);
+      if(cited>0 && r>=12){ ctx.fillStyle=inkFor(hasNote||hero?col:C.paleStripe); ctx.font=font(600,Math.min(13,r*.75),SANS);
+        ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(String(cited),cx,cy+.5); }
+      if(p.status && p.status!=="toread" && s>0.4){
+        ctx.beginPath(); ctx.arc(cx+r*0.72, cy-r*0.72, 4.5, 0, 6.283);
+        ctx.fillStyle= p.status==="read"?C.read:C.skimmed; ctx.fill(); ctx.strokeStyle=C.surface; ctx.lineWidth=1.5; ctx.stroke();
       }
-      if(p.emph==="hi"){
-        ctx.beginPath(); ctx.arc(cx,cy,r+5,0,6.283); ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.stroke();
-      }
-      if(p.emph==="hero"){
-        ctx.beginPath(); ctx.arc(cx,cy,r+5,0,6.283); ctx.strokeStyle=col; ctx.lineWidth=3; ctx.stroke();
-        ctx.beginPath(); ctx.arc(cx,cy,r+9.5,0,6.283); ctx.strokeStyle= col.length===7? col+"4D":col; ctx.lineWidth=3; ctx.stroke();
-      }
-      if((view.scale>0.45 || p.emph==="hero") && !dim){
-        const label= p.emph==="hero"? (p.title||"Untitled") : ((p.authors? p.authors.split(",")[0].trim():"?")+(p.year?" "+p.year:""));
-        ctx.fillStyle="#39415c"; ctx.font=(p.emph==="hero"?"700 ":"")+"11px -apple-system,sans-serif";
-        ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(label.slice(0,30), cx, cy+r+(p.emph==="hero"?13:3));
+      if((s>0.45 || hero) && !dim){
+        const label= hero? (p.title||"Untitled") : ((firstAuthor(p)||"Untitled")+(p.year?" "+p.year:""));
+        ctx.fillStyle=C.ink2; ctx.font= hero? font(600,12,SERIF) : font(0,11,SANS);
+        ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(label.length>34?label.slice(0,33)+"…":label, cx, cy+r+(hero?9:5));
       }
       ctx.globalAlpha=1; continue;
     }
-    const hw=CARDW*heroScale(p)*view.scale, hh=CARDH*heroScale(p)*view.scale; const x=cx-hw/2, y=cy-hh/2;
+    const hs=heroScale(p), hw=CARDW*hs*s, hh=CARDH*hs*s; const x=cx-hw/2, y=cy-hh/2, rad=8*s;
     nodeRects.push([x,y,hw,hh]);
-    if(x>W||y>H||x+hw<0||y+hh<0){ ctx.globalAlpha=1; continue; }
-    if(lit){ ctx.lineWidth=3.5; ctx.strokeStyle="rgba(31,169,113,.95)"; roundRect(x-3,y-3,hw+6,hh+6,14*view.scale); ctx.stroke(); }
-    ctx.fillStyle= (hasNote||p.emph==="hero")? "#ffffff":"#f4f7fc";
-    ctx.shadowColor="rgba(40,55,95,.16)"; ctx.shadowBlur= isSel?16:8; ctx.shadowOffsetY=3;
-    roundRect(x,y,hw,hh,12*view.scale); ctx.fill();
+    if(x>W+20||y>H+20||x+hw<-20||y+hh<-20){ ctx.globalAlpha=1; continue; }
+    if(lit) markerSwipe(x,y,hw,hh,s);
+    if(hero){ ctx.lineWidth=2; ctx.strokeStyle=col; roundRect(x-4*s,y-4*s,hw+8*s,hh+8*s,rad+3*s); ctx.stroke(); }
+    ctx.fillStyle= lit? "#FCF6C4" : (hasNote||hero)? C.surface : C.pale;
+    ctx.shadowColor="rgba(28,36,33,.10)"; ctx.shadowBlur= isSel?14:5; ctx.shadowOffsetY= isSel?3:1;
+    roundRect(x,y,hw,hh,rad); ctx.fill();
     ctx.shadowBlur=0; ctx.shadowOffsetY=0;
-    if(p.emph!=="hero"){
-      ctx.fillStyle= hasNote? col : "#c7d0e6";
-      roundRectLeft(x,y,5.5*view.scale,hh,12*view.scale); ctx.fill();
-    } else {
-      ctx.save(); roundRect(x,y,hw,hh,12*view.scale); ctx.clip();
-      ctx.fillStyle=col; ctx.fillRect(x,y,hw,hh*0.52);
-      ctx.restore();
-    }
-    const inSel=selSet.has(p.id);
-    ctx.lineWidth= (isSel||inSel)?3: isLF?3: isHover?2:1.2;
-    ctx.strokeStyle= isLF? "#ff8a5b" : inSel? "#6C8CFF" : (isSel||p.emph==="hero")? col : "rgba(120,135,170,.35)";
-    roundRect(x,y,hw,hh,12*view.scale); ctx.stroke();
-    if(p.emph==="hi"){
-      ctx.lineWidth=2.5; ctx.strokeStyle=col;
-      roundRect(x-3,y-3,hw+6,hh+6,13*view.scale); ctx.stroke();
-    }
-    if(p.emph==="hero"){
-      ctx.lineWidth=3; ctx.strokeStyle=col;
-      roundRect(x-3.5,y-3.5,hw+7,hh+7,13*view.scale); ctx.stroke();
-      ctx.strokeStyle= col.length===7? col+"4D":col;
-      roundRect(x-8,y-8,hw+16,hh+16,16*view.scale); ctx.stroke();
-    }
-    const fs=12*view.scale*(p.emph==="hero"?1.08:1);
-    if(fs>=6.5){
-      const padL=x+11*view.scale, maxW=hw-18*view.scale;
-      ctx.textAlign="left"; ctx.textBaseline="top";
-      ctx.font="700 "+fs.toFixed(1)+"px -apple-system,sans-serif";
-      ctx.fillStyle= p.emph==="hero"? inkFor(col) : (dim?"#9aa6c4":"#232a40");
-      const tlines=wrapLines(p.title||"Untitled",maxW,2);
-      let ty=y+(p.emph==="hero"?8:9)*view.scale;
-      for(const ln of tlines){ ctx.fillText(ln,padL,ty); ty+=fs*1.18; }
-      ctx.font=(fs*0.92).toFixed(1)+"px -apple-system,sans-serif";
-      ctx.fillStyle="#6b7488";
-      const auth=p.authors? "("+p.authors+")":"(—)";
-      const aln=wrapLines(auth,maxW,1);
-      ctx.fillText(aln[0]||"",padL,y+hh-fs*1.35);
-    } else if(p.emph==="hero" && !dim){
-      ctx.font="700 11px -apple-system,sans-serif";
-      ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillStyle="#232a40";
-      let mt=p.title||"Untitled"; if(mt.length>32) mt=mt.slice(0,31)+"…";
-      ctx.fillText(mt, cx, y+hh+5);
-    }
+    if(hero){ ctx.save(); roundRect(x,y,hw,hh,rad); ctx.clip(); ctx.fillStyle=col; ctx.fillRect(x,y,hw,hh*0.56); ctx.restore(); }
+    else { ctx.fillStyle= hasNote? col : C.paleStripe; roundRectLeft(x,y,4*s,hh,rad); ctx.fill(); }
+    if(isSel||inSel||isLF){ ctx.lineWidth=2; ctx.strokeStyle=C.accent; if(isLF) ctx.setLineDash([5,4]); }
+    else { ctx.lineWidth= isHover?1.5:1; ctx.strokeStyle= isHover? C.ink3 : hero? col : C.rule; }
+    roundRect(x,y,hw,hh,rad); ctx.stroke(); ctx.setLineDash([]);
     const cited=inDegree(p.id);
-    if(cited>0 && view.scale>0.4){
-      const bx=x+hw-12*view.scale, by=y+10*view.scale, br=9*view.scale;
-      ctx.beginPath(); ctx.arc(bx,by,br,0,6.283);
-      ctx.fillStyle= p.emph==="hero"? inkFor(col) : col; ctx.fill();
-      ctx.fillStyle= p.emph==="hero"? (inkFor(col)==="#ffffff"? "#232a40":"#ffffff") : "#fff";
-      ctx.font="700 "+(10*view.scale).toFixed(1)+"px -apple-system,sans-serif";
-      ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(String(cited),bx,by+0.5);
-    }
-    if(p.status && p.status!=="toread" && view.scale>0.4){
-      const sc= p.status==="read"?"#34c7a0":"#ffc247";
-      ctx.beginPath(); ctx.arc(x+hw-12*view.scale, y+hh-10*view.scale, Math.max(3.5,4.5*view.scale), 0, 6.283);
-      ctx.fillStyle=sc; ctx.fill(); ctx.strokeStyle="#fff"; ctx.lineWidth=1.2; ctx.stroke();
+    const fs=12.5*s*(hero?1.04:1);
+    if(fs>=6){
+      const padL=x+12*s, right=x+hw-9*s;
+      const badgeW= cited>0 && s>0.4 ? (String(cited).length*6+10)*s : 0;
+      ctx.textAlign="left"; ctx.textBaseline="top";
+      ctx.font=font(600,fs,SERIF);
+      ctx.fillStyle= hero? inkFor(col) : (hasNote? C.ink : C.ink2);
+      const tlines=wrapLines(p.title||"Untitled",right-padL-(badgeW?badgeW+4*s:0),2);
+      let ty=y+(hero?7:9)*s;
+      for(const ln of tlines){ ctx.fillText(ln,padL,ty); ty+=fs*1.2; }
+      /* bottom line: authors on the left, year (and status) on the right */
+      const ms=10.5*s, by=y+hh-ms-8*s;
+      let rx=right;
+      if(p.status && p.status!=="toread"){ const d=Math.max(3,3.6*s);
+        ctx.beginPath(); ctx.arc(rx-d, by+ms*0.55, d, 0, 6.283); ctx.fillStyle= p.status==="read"?C.read:C.skimmed; ctx.fill(); rx-=d*2+5*s; }
+      ctx.font=font(0,ms,SANS);
+      if(p.year){ ctx.textAlign="right"; ctx.fillStyle=C.ink3; ctx.fillText(String(p.year),rx,by); rx-=ctx.measureText(String(p.year)).width+8*s; }
+      ctx.textAlign="left"; ctx.fillStyle= hero? C.ink2 : C.ink2;
+      const aln=wrapLines(p.authors||"No authors",Math.max(10,rx-padL),1);
+      ctx.fillText(aln[0]||"",padL,by);
+      if(badgeW){
+        const bh=15*s, bx=right-badgeW, byy=y+8*s;
+        ctx.fillStyle= hero? inkFor(col) : (hasNote? col : C.paleStripe); roundRect(bx,byy,badgeW,bh,bh/2); ctx.fill();
+        ctx.fillStyle= hero? col : "#fff"; ctx.font=font(600,9.5*s,SANS); ctx.textAlign="center"; ctx.textBaseline="middle";
+        ctx.fillText(String(cited),bx+badgeW/2,byy+bh/2+.5*s);
+      }
+    } else if(!dim && hw>28){
+      /* too small for the full card: a short author-year tag keeps papers identifiable */
+      const fa=firstAuthor(p)||(p.title||"Untitled").split(" ")[0];
+      ctx.font=font(500,9,SANS); ctx.textAlign="center"; ctx.textBaseline="middle";
+      let tag=fa+(p.year?" ’"+String(p.year).slice(-2):"");
+      if(ctx.measureText(tag).width>hw-8) tag=fa;
+      while(tag.length>2 && ctx.measureText(tag).width>hw-8) tag=tag.slice(0,-2)+"…";
+      ctx.fillStyle= hero? inkFor(col) : (hasNote? C.ink : C.ink2);
+      ctx.fillText(tag, cx+(hero?0:2*s), hero? y+hh*0.28 : cy);
     }
     ctx.globalAlpha=1;
   }
+  /* link notes, placed to avoid papers and each other */
   if(labelJobs.length){
-    ctx.font="11px -apple-system,sans-serif";
+    ctx.font=font(0,11,SANS);
     const placed=[];
-    const overlaps=(x,y)=>!(x[0]+x[2]<y[0]||y[0]+y[2]<x[0]||x[1]+x[3]<y[1]||y[1]+y[3]<x[1]);
-    labelJobs.sort((x,y)=>((y.sel||y.lblMatch||y.hov||y.e.pin)?1:0)-((x.sel||x.lblMatch||x.hov||x.e.pin)?1:0));
+    const overlaps=(a,b)=>!(a[0]+a[2]<b[0]||b[0]+b[2]<a[0]||a[1]+a[3]<b[1]||b[1]+b[3]<a[1]);
+    labelJobs.sort((a,b)=>((b.sel||b.lblMatch||b.hov||b.e.pin)?1:0)-((a.sel||a.lblMatch||a.hov||a.e.pin)?1:0));
     for(const job of labelJobs){
       const {e,pts,sel,lblMatch,hov}=job;
       const must=sel||lblMatch||hov||e.pin;
-      let txt=e.label; if(txt.length>34) txt=txt.slice(0,33)+"…";
-      const tw=ctx.measureText(txt).width, pad=7, ph=18, pw=tw+pad*2;
+      let txt=e.label; if(txt.length>40) txt=txt.slice(0,39)+"…";
+      const tw=ctx.measureText(txt).width, pad=7, ph=19, pw=tw+pad*2;
       const at=t=>{
         const f=t*(pts.length-1), i=Math.min(pts.length-2,Math.floor(f)), u=f-i;
         const p0=pts[i], p1=pts[i+1];
@@ -740,50 +1002,50 @@ function draw(){
       outer:
       for(const off of [14,30,46]){
         for(const t of [0.5,0.42,0.58,0.34,0.66,0.26,0.74,0.18,0.82]){
-          const q=at(t);
-          const steep=Math.abs(q.ang)>0.72;
-          const drawAng= steep? 0 : q.ang;
-          const lx=q.x+off*Math.sin(q.ang), ly=q.y-off*Math.cos(q.ang);
+          const qq=at(t);
+          const steep=Math.abs(qq.ang)>0.72;
+          const drawAng= steep? 0 : qq.ang;
+          const lx=qq.x+off*Math.sin(qq.ang), ly=qq.y-off*Math.cos(qq.ang);
           const bw=pw*Math.abs(Math.cos(drawAng))+ph*Math.abs(Math.sin(drawAng));
           const bh=pw*Math.abs(Math.sin(drawAng))+ph*Math.abs(Math.cos(drawAng));
           const box=[lx-bw/2,ly-bh/2,bw,bh];
           let score=0;
           for(const rc of placed){ if(overlaps(box,rc)){ score+=100; if(score>=bestScore) break; } }
           if(score<bestScore){ for(const rc of nodeRects){ if(overlaps(box,rc)){ score+=25; if(score>=bestScore) break; } } }
-          if(score<bestScore){ bestScore=score; best={x:lx,y:ly,ang:drawAng,box,ex:q.x,ey:q.y}; if(!score) break outer; }
+          if(score<bestScore){ bestScore=score; best={x:lx,y:ly,ang:drawAng,box,ex:qq.x,ey:qq.y}; if(!score) break outer; }
         }
       }
       if(!best) continue;
-      if(bestScore>0 && !must) continue; // no clean spot — hidden until hover/select/pin
+      if(bestScore>0 && !must) continue; // no clean spot: shown on hover, select or pin
       placed.push(best.box);
-      const lc= lblMatch?"rgba(31,169,113,.95)": (sel||hov)?"rgba(255,138,91,.95)": e.pin?"rgba(255,138,91,.7)":"rgba(108,140,255,.55)";
-      ctx.strokeStyle=lc; ctx.lineWidth=1;
+      const strong=sel||hov;
+      ctx.strokeStyle= strong? C.accent : "rgba(85,97,92,.45)"; ctx.lineWidth=1;
       ctx.beginPath(); ctx.moveTo(best.ex,best.ey); ctx.lineTo(best.x,best.y); ctx.stroke();
-      ctx.beginPath(); ctx.arc(best.ex,best.ey,2.2,0,6.283); ctx.fillStyle=lc; ctx.fill();
+      ctx.beginPath(); ctx.arc(best.ex,best.ey,2,0,6.283); ctx.fillStyle=ctx.strokeStyle; ctx.fill();
       ctx.save(); ctx.translate(best.x,best.y); ctx.rotate(best.ang);
-      ctx.fillStyle="rgba(255,255,255,.93)";
-      ctx.strokeStyle= lblMatch?"rgba(31,169,113,.95)": (sel||hov)?"rgba(255,138,91,.95)": e.pin?"rgba(255,138,91,.7)":"rgba(108,140,255,.55)";
-      ctx.lineWidth=(e.pin||sel||lblMatch)?1.6:1.2;
-      roundRect(-pw/2,-ph/2,pw,ph,8); ctx.fill(); ctx.stroke();
-      ctx.fillStyle="#39415c"; ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.fillText(txt,0,0);
+      ctx.fillStyle= lblMatch? C.marker : e.pin? C.markerSoft : C.surface;
+      ctx.strokeStyle= strong? C.accent : (lblMatch||e.pin)? C.markerEdge : C.rule;
+      ctx.lineWidth= strong?1.5:1;
+      roundRect(-pw/2,-ph/2,pw,ph,4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle= strong||lblMatch? C.ink : C.ink2; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(txt,0,0.5);
       ctx.restore();
     }
   }
   if((linkMode||shiftDown) && linkFirst && curMouse){
     const p=byId(linkFirst); if(p){ const [x1,y1]=w2s(p.x,p.y);
-      ctx.strokeStyle="rgba(255,138,91,.85)"; ctx.setLineDash([6,5]); ctx.lineWidth=2;
+      ctx.strokeStyle=C.accent; ctx.setLineDash([6,5]); ctx.lineWidth=2;
       ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(curMouse[0],curMouse[1]); ctx.stroke(); ctx.setLineDash([]); }
   }
   if(band){
     const bx0=Math.min(band[0],band[2]), by0=Math.min(band[1],band[3]);
     const bw=Math.abs(band[2]-band[0]), bh=Math.abs(band[3]-band[1]);
-    ctx.fillStyle="rgba(108,140,255,.08)"; ctx.fillRect(bx0,by0,bw,bh);
-    ctx.strokeStyle="rgba(108,140,255,.9)"; ctx.setLineDash([5,4]); ctx.lineWidth=1.5;
+    ctx.fillStyle="rgba(30,106,80,.06)"; ctx.fillRect(bx0,by0,bw,bh);
+    ctx.strokeStyle="rgba(30,106,80,.8)"; ctx.setLineDash([5,4]); ctx.lineWidth=1.25;
     ctx.strokeRect(bx0,by0,bw,bh); ctx.setLineDash([]);
   }
   if(snapGuides && dragging){
-    ctx.strokeStyle="rgba(255,138,91,.7)"; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+    ctx.strokeStyle="rgba(30,106,80,.55)"; ctx.setLineDash([4,4]); ctx.lineWidth=1;
     if(snapGuides.x!=null){ const gx=w2s(snapGuides.x,0)[0]; ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
     if(snapGuides.y!=null){ const gy=w2s(0,snapGuides.y)[1]; ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
     ctx.setLineDash([]);
@@ -818,8 +1080,10 @@ function edgeAt(sx,sy){
 let curMouse=null, dragging=null, panning=false, panStart=null, downPos=null, movedFar=false;
 const tip=document.getElementById("tip");
 function showTip(p,sx,sy){
-  const note=p.note&&p.note.trim()? `<div class="tn">${esc(p.note)}</div>` : `<div class="tnone">No notes yet — click to add a summary.</div>`;
-  tip.innerHTML=`<div class="tt">${esc(p.title)}</div>${note}`;
+  let n=(p.note||"").trim(); if(n.length>420) n=n.slice(0,419)+"…";
+  const note=n? `<div class="tn">${esc(n)}</div>` : `<div class="tnone">No notes yet. Click the paper to add some.</div>`;
+  const meta=[firstAuthor(p)&&(firstAuthor(p)+((p.authors||"").includes(",")?" et al.":"")),p.year].filter(Boolean).join(", ");
+  tip.innerHTML=`<div class="tt">${esc(p.title||"Untitled")}</div>${meta?`<div class="tm">${esc(meta)}</div>`:""}${note}`;
   tip.style.display="block";
   const r=cv.getBoundingClientRect(); let tx=sx+16, ty=sy+14;
   if(tx+tip.offsetWidth>r.width) tx=sx-tip.offsetWidth-12;
@@ -939,7 +1203,7 @@ cv.addEventListener("dblclick",e=>{
 /* ============================ Touch (mobile) ============================ */
 let pinch=null;
 cv.addEventListener("touchstart",ev=>{
-  layoutMenu.classList.remove("open"); exportMenu.classList.remove("open"); if(typeof addMenu!=="undefined") addMenu.classList.remove("open");
+  closeMenus();
   const r=cv.getBoundingClientRect();
   if(ev.touches.length===1){ const t=ev.touches[0]; const sx=t.clientX-r.left, sy=t.clientY-r.top;
     downPos=[sx,sy]; movedFar=false; curMouse=[sx,sy]; const hit=nodeAt(sx,sy);
@@ -1093,12 +1357,12 @@ function layoutTimeline(){
   finalizeLayout();
 }
 const LAYOUTS=[
-  {id:"radial", name:"Radial", desc:"hub at centre, rings by citation depth", fn:layoutRadial},
-  {id:"layered",name:"Layered", desc:"left → right by citation depth", fn:layoutLayered},
-  {id:"circle", name:"Single circle", desc:"one ring + edge bundling", fn:layoutCircle},
-  {id:"grid",   name:"Grid", desc:"tidy grid, most-cited first", fn:layoutGrid},
-  {id:"force",  name:"Force-directed", desc:"organic clusters (one-shot)", fn:layoutForce},
-  {id:"timeline",name:"Timeline", desc:"columns by year, oldest → newest", fn:layoutTimeline},
+  {id:"radial", name:"Radial", desc:"The most-citing paper in the centre, rings by citation distance", fn:layoutRadial},
+  {id:"layered",name:"Layered", desc:"Left to right by citation depth", fn:layoutLayered},
+  {id:"circle", name:"Single circle", desc:"One ring, links bundled together", fn:layoutCircle},
+  {id:"grid",   name:"Grid", desc:"Rows and columns, most cited first", fn:layoutGrid},
+  {id:"force",  name:"Force-directed", desc:"Organic clusters, computed once", fn:layoutForce},
+  {id:"timeline",name:"Timeline", desc:"Columns by year, oldest first", fn:layoutTimeline},
 ];
 function runLayout(id){ const L=LAYOUTS.find(x=>x.id===id); if(L){ lastLayout=id; heb=null; L.fn(); renderLayoutMenu(); } }
 function arrange(){ runLayout(lastLayout||"radial"); }
@@ -1117,60 +1381,117 @@ function restoreBookmark(i){ const b=bookmarks[i]; if(!b) return; pushUndo();
 function deleteBookmark(i){ bookmarks.splice(i,1); save(); renderLayoutMenu(); }
 
 /* ==== src/js/06-ui.js ==== */
-
 /* ============================ Menus ============================ */
 const layoutMenu=document.getElementById("layoutMenu");
 const exportMenu=document.getElementById("exportMenu");
+const addMenu=document.getElementById("addMenu");
+const infoBtn=document.getElementById("infoBtn"), infoPop=document.getElementById("infoPop");
+const legendBtn=document.getElementById("legendBtn"), legendPop=document.getElementById("legendPop");
+const MENUS=[[layoutMenu,"btnLayout"],[exportMenu,"btnExport"],[addMenu,"btnAdd"],[infoPop,"infoBtn"],[legendPop,"legendBtn"]];
+let exportOwner="btnExport";   // the export menu doubles as the phone "File" menu
+
+function closeMenus(except){
+  for(const [m,b] of MENUS){ if(m===except) continue; m.classList.remove("open"); }
+  for(const id of ["btnLayout","btnExport","btnAdd","btnFile"]){ const el=document.getElementById(id); if(el) el.setAttribute("aria-expanded","false"); }
+  infoBtn.classList.remove("on"); legendBtn.classList.remove("on");
+  if(except===exportMenu) document.getElementById(exportOwner).setAttribute("aria-expanded","true");
+}
+function positionMenu(menu,btnId){ const r=document.getElementById(btnId).getBoundingClientRect();
+  const w=menu.offsetWidth||280;
+  menu.style.left=Math.max(8,Math.min(r.left,window.innerWidth-w-8))+"px"; menu.style.top=(r.bottom+6)+"px"; }
+function toggleMenu(menu,btnId,render){
+  const willOpen=!menu.classList.contains("open");
+  closeMenus(willOpen?menu:null);
+  if(!willOpen){ menu.classList.remove("open"); return; }
+  render(); hydrateIcons(menu); menu.classList.add("open");
+  document.getElementById(btnId).setAttribute("aria-expanded","true");
+  positionMenu(menu,btnId);
+}
+function menuItem(attr,icon,main,sub,cls){
+  return `<button class="item${cls?" "+cls:""}" role="menuitem" ${attr}>${ic(icon)}<span class="txt"><span class="main">${main}</span>${sub?`<span class="sub">${sub}</span>`:""}</span></button>`; }
+
+/* ---- Layout menu ---- */
 function renderLayoutMenu(){
-  let html='<h4>Auto layouts — click to try</h4>';
-  for(const L of LAYOUTS){ html+=`<button class="item" data-lay="${L.id}">${L.id===lastLayout?"● ":""}${L.name} <small>— ${L.desc}</small></button>`; }
-  html+=`<div class="ctl"><label>Edge bundling — circle layout (β = <span id="bsVal">${bundleStrength.toFixed(2)}</span>)</label>
-    <input type="range" id="bsSlider" min="0" max="1" step="0.05" value="${bundleStrength}"></div>`;
-  html+=`<div class="ctl"><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cbTag" ${colorByTag?"checked":""}> Colour nodes by first tag</label></div>`;
-  html+=`<div class="ctl"><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cbSnap" ${snapOn?"checked":""}> Snap while dragging <small>— hold Ctrl to bypass</small></label></div>`;
+  if(!layoutMenu.classList.contains("open") && !renderLayoutMenu._force){ /* render on demand only */ }
+  let html='<h4>Arrange papers</h4>';
+  for(const L of LAYOUTS){ html+=menuItem(`data-lay="${L.id}"`, L.id===lastLayout?"read":"layout", L.name, L.desc, L.id===lastLayout?"current":""); }
+  html+=`<div class="ctl"><div class="range-head"><span>Bundling strength (single circle)</span><span id="bsVal">${bundleStrength.toFixed(2)}</span></div>
+    <input type="range" id="bsSlider" min="0" max="1" step="0.05" value="${bundleStrength}" aria-label="Bundling strength"></div>`;
+  html+=`<div class="ctl"><label><input type="checkbox" id="cbTag" ${colorByTag?"checked":""}>Colour papers by their first tag</label></div>`;
+  html+=`<div class="ctl"><label><input type="checkbox" id="cbSnap" ${snapOn?"checked":""}>Snap to grid and other papers</label><span class="sub">Hold Ctrl while dragging to place freely</span></div>`;
   html+='<div class="divider"></div><h4>Saved layouts</h4>';
   if(bookmarks.length){ bookmarks.forEach((b,i)=>{
-    html+=`<div class="bm"><span class="nm" data-bm="${i}" title="Restore this layout">★ ${esc(b.name)}</span><button data-bmdel="${i}" title="Delete">✕</button></div>`; }); }
-  else { html+='<div class="meta" style="margin:0 8px 4px">None yet — arrange or drag papers, then save.</div>'; }
-  html+='<div class="saverow"><input id="bmName" placeholder="Name current layout…"><button class="primary" id="bmSave">Save</button></div>';
+    html+=`<div class="bm"><span class="nm" data-bm="${i}" role="menuitem" tabindex="0" title="Restore this layout">${ic("bookmark")}<span>${esc(b.name)}</span></span><button class="x" data-bmdel="${i}" title="Delete saved layout">${ic("x")}</button></div>`; }); }
+  else { html+='<p class="note">No saved layouts yet. Arrange the papers the way you like, then save it here.</p>'; }
+  html+='<div class="saverow"><input id="bmName" placeholder="Name this layout"><button class="primary" id="bmSave">Save</button></div>';
   layoutMenu.innerHTML=html;
   layoutMenu.querySelectorAll("[data-lay]").forEach(b=>b.onclick=()=>{ runLayout(b.dataset.lay); });
   const bs=layoutMenu.querySelector("#bsSlider");
-  bs.oninput=()=>{ bundleStrength=parseFloat(bs.value); const v=layoutMenu.querySelector("#bsVal"); if(v) v.textContent=bundleStrength.toFixed(2); save(); requestDraw(); };
-  const cbT=layoutMenu.querySelector("#cbTag");
-  cbT.onchange=()=>{ colorByTag=cbT.checked; save(); requestDraw(); };
-  const cbS=layoutMenu.querySelector("#cbSnap");
-  cbS.onchange=()=>{ snapOn=cbS.checked; save(); };
-  layoutMenu.querySelectorAll("[data-bm]").forEach(b=>b.onclick=()=>{ restoreBookmark(+b.dataset.bm); });
-  layoutMenu.querySelectorAll("[data-bmdel]").forEach(b=>b.onclick=()=>{ deleteBookmark(+b.dataset.bmdel); });
-  layoutMenu.querySelector("#bmSave").onclick=()=>{ const inp=layoutMenu.querySelector("#bmName"); saveBookmark(inp.value); };
-  const inp=layoutMenu.querySelector("#bmName"); if(inp) inp.onkeydown=ev=>{ if(ev.key==="Enter"){ saveBookmark(inp.value); } };
+  bs.oninput=()=>{ bundleStrength=parseFloat(bs.value); layoutMenu.querySelector("#bsVal").textContent=bundleStrength.toFixed(2); save(); requestDraw(); };
+  const cbT=layoutMenu.querySelector("#cbTag"); cbT.onchange=()=>{ colorByTag=cbT.checked; save(); requestDraw(); };
+  const cbS=layoutMenu.querySelector("#cbSnap"); cbS.onchange=()=>{ snapOn=cbS.checked; save(); };
+  layoutMenu.querySelectorAll("[data-bm]").forEach(b=>{ b.onclick=()=>restoreBookmark(+b.dataset.bm); b.onkeydown=ev=>{ if(ev.key==="Enter") restoreBookmark(+b.dataset.bm); }; });
+  layoutMenu.querySelectorAll("[data-bmdel]").forEach(b=>b.onclick=()=>deleteBookmark(+b.dataset.bmdel));
+  const inp=layoutMenu.querySelector("#bmName");
+  layoutMenu.querySelector("#bmSave").onclick=()=>saveBookmark(inp.value);
+  inp.onkeydown=ev=>{ if(ev.key==="Enter") saveBookmark(inp.value); };
 }
-function positionMenu(menu,btnId){ const r=document.getElementById(btnId).getBoundingClientRect();
-  menu.style.left=Math.min(r.left,window.innerWidth-270)+"px"; menu.style.top=(r.bottom+6)+"px"; }
-document.getElementById("btnLayout").onclick=e=>{ e.stopPropagation(); exportMenu.classList.remove("open");
-  const open=layoutMenu.classList.toggle("open"); if(open){ renderLayoutMenu(); positionMenu(layoutMenu,"btnLayout"); } };
-function renderExportMenu(){
-  exportMenu.innerHTML=`<h4>Export</h4>
-    <button class="item" data-x="json">💾 Save As… / JSON backup</button>
-    <button class="item" data-x="bibfile">📚 BibLaTeX → file <small>— .bib</small></button>
-    <button class="item" data-x="bibclip">📋 BibLaTeX → clipboard</button>
-    <button class="item" data-x="draft">📝 Related-work draft <small>— .md, grouped by tag</small></button>`;
-  exportMenu.querySelector('[data-x="json"]').onclick=()=>{ saveAs(); exportMenu.classList.remove("open"); };
-  exportMenu.querySelector('[data-x="bibfile"]').onclick=()=>{ downloadBib(); exportMenu.classList.remove("open"); };
-  exportMenu.querySelector('[data-x="bibclip"]').onclick=()=>{ copyBib(); exportMenu.classList.remove("open"); };
-  exportMenu.querySelector('[data-x="draft"]').onclick=()=>{ downloadDraft(); exportMenu.classList.remove("open"); };
+document.getElementById("btnLayout").onclick=e=>{ e.stopPropagation(); toggleMenu(layoutMenu,"btnLayout",renderLayoutMenu); };
+
+/* ---- Export / File menu ---- */
+function renderExportMenu(withFile){
+  let html="";
+  if(withFile){
+    html+='<h4>Library</h4>'
+      +menuItem('data-x="new"',"fileNew","New library","Start with an empty canvas")
+      +menuItem('data-x="open"',"open","Open…","A library file (.json)")
+      +menuItem('data-x="save"',"save","Save", fileHandle? "Write to "+esc(currentFileName) : "Choose where to save")
+      +'<div class="divider"></div>';
+  }
+  html+='<h4>Export</h4>'
+    +menuItem('data-x="json"',"save","Save as…","A new copy as a .json file")
+    +menuItem('data-x="bibfile"',"download","BibLaTeX file","A .bib file for LaTeX or Zotero")
+    +menuItem('data-x="bibclip"',"copy","Copy BibLaTeX","To the clipboard")
+    +menuItem('data-x="draft"',"draft","Related-work draft","Markdown with your notes, grouped by first tag");
+  exportMenu.innerHTML=html;
+  const act={ new:newLibrary, open:openFile, save:saveCurrent, json:saveAs, bibfile:downloadBib, bibclip:copyBib, draft:downloadDraft };
+  exportMenu.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{ closeMenus(); act[b.dataset.x](); });
 }
-document.getElementById("btnExport").onclick=e=>{ e.stopPropagation(); layoutMenu.classList.remove("open");
-  const open=exportMenu.classList.toggle("open"); if(open){ renderExportMenu(); positionMenu(exportMenu,"btnExport"); } };
-document.addEventListener("mousedown",e=>{
-  if(layoutMenu.classList.contains("open") && !layoutMenu.contains(e.target) && e.target.id!=="btnLayout") layoutMenu.classList.remove("open");
-  if(exportMenu.classList.contains("open") && !exportMenu.contains(e.target) && e.target.id!=="btnExport") exportMenu.classList.remove("open");
-  if(infoPop.classList.contains("open") && !infoPop.contains(e.target) && e.target.id!=="infoBtn") infoPop.classList.remove("open");
-  if(addMenu.classList.contains("open") && !addMenu.contains(e.target) && e.target.id!=="btnAdd") addMenu.classList.remove("open");
+document.getElementById("btnExport").onclick=e=>{ e.stopPropagation(); exportOwner="btnExport"; toggleMenu(exportMenu,"btnExport",()=>renderExportMenu(false)); };
+document.getElementById("btnFile").onclick=e=>{ e.stopPropagation(); exportOwner="btnFile"; toggleMenu(exportMenu,"btnFile",()=>renderExportMenu(true)); };
+
+/* ---- Add menu ---- */
+function renderAddMenu(){
+  addMenu.innerHTML='<h4>Add papers</h4>'
+    +menuItem('data-add="manual"',"edit","Enter a paper","Type the details or fetch them by DOI")
+    +menuItem('data-add="bib"',"import","Paste BibLaTeX","Import many at once from Zotero")
+    +'<div class="divider"></div>'
+    +menuItem('data-add="auto"',"sync","Find citation links","Looks up reference lists on OpenAlex; needs DOIs or arXiv IDs");
+  addMenu.querySelector('[data-add="manual"]').onclick=()=>{ closeMenus(); openPaperModal(null); };
+  addMenu.querySelector('[data-add="bib"]').onclick=()=>{ closeMenus(); openBib(); };
+  addMenu.querySelector('[data-add="auto"]').onclick=()=>{ closeMenus(); runAutoLink(); };
+}
+document.getElementById("btnAdd").onclick=e=>{ e.stopPropagation(); toggleMenu(addMenu,"btnAdd",renderAddMenu); };
+
+document.addEventListener("pointerdown",e=>{
+  for(const [m,b] of MENUS){
+    if(!m.classList.contains("open")) continue;
+    const owner= m===exportMenu? document.getElementById(exportOwner) : document.getElementById(b);
+    if(!m.contains(e.target) && !(owner && owner.contains(e.target))){ m.classList.remove("open"); if(owner){ owner.setAttribute("aria-expanded","false"); owner.classList.remove("on"); } }
+  }
 });
-const infoBtn=document.getElementById("infoBtn"), infoPop=document.getElementById("infoPop");
-const legendBtn=document.getElementById("legendBtn"), legendPop=document.getElementById("legendPop");
+window.addEventListener("resize",()=>{ for(const [m,b] of MENUS){ if(m.classList.contains("open")){ if(m.classList.contains("pop")) positionPop(m, m===infoPop?infoBtn:legendBtn); else positionMenu(m, m===exportMenu?exportOwner:b); } } });
+
+/* ---- Canvas popovers: colour legend and help ---- */
+function positionPop(pop,btn){ const wrap=document.getElementById("graphWrap").getBoundingClientRect(); const r=btn.getBoundingClientRect();
+  const left=Math.max(8,Math.min(r.left-wrap.left, wrap.width-pop.offsetWidth-8));
+  pop.style.left=left+"px"; pop.style.top=Math.max(8, r.top-wrap.top-pop.offsetHeight-8)+"px"; }
+function togglePop(pop,btn,render){
+  const willOpen=!pop.classList.contains("open");
+  closeMenus(willOpen?pop:null);
+  if(!willOpen){ pop.classList.remove("open"); btn.classList.remove("on"); return; }
+  render(); hydrateIcons(pop); pop.classList.add("open"); btn.classList.add("on"); positionPop(pop,btn);
+}
 function legendTagGuess(c){
   const cnt=new Map();
   for(const p of state.papers){ if(p.color===c) for(const t of (p.tags||[])) cnt.set(t,(cnt.get(t)||0)+1); }
@@ -1182,70 +1503,99 @@ function renderLegend(){
   for(const p of state.papers){ if(p.color) counts.set(p.color,(counts.get(p.color)||0)+1); }
   const rows=[...counts.entries()].sort((a,b)=>b[1]-a[1]);
   let html='<h4>Colour legend</h4>';
-  if(!rows.length) html+='<div class="meta" style="margin:0 8px 8px;max-width:220px">No manual colours yet — assign them in a paper\'s "Colour &amp; style" section.</div>';
+  if(!rows.length) html+='<p class="note" style="max-width:240px">No colours assigned yet. Pick one in a paper\'s Colour section, then name it here.</p>';
   for(const [c,n] of rows){
-    html+=`<div style="display:flex;align-items:center;gap:8px;padding:3px 8px">
-      <button data-lgf="${esc(c)}" title="Show only these papers" style="width:20px;height:20px;flex:none;border-radius:6px;background:${esc(c)};padding:0;border:${colorFilter===c?"2px solid #232a40":"1px solid rgba(0,0,0,.15)"}"></button>
-      <input data-lgn="${esc(c)}" placeholder="${esc(legendTagGuess(c)||"name this colour…")}" value="${esc(legendNames[c]||"")}" style="flex:1;font-size:12px;padding:4px 6px;min-width:130px">
-      <span class="meta" style="flex:none">${n}</span></div>`;
+    html+=`<div class="legend-row">
+      <button class="sw" data-lgf="${esc(c)}" aria-pressed="${colorFilter===c}" title="Show only these papers" style="background:${esc(c)}"></button>
+      <input data-lgn="${esc(c)}" placeholder="${esc(legendTagGuess(c)||"Name this colour")}" value="${esc(legendNames[c]||"")}" aria-label="Name for this colour">
+      <span class="n">${n}</span></div>`;
   }
-  html+= colorFilter? '<div class="meta" style="margin:6px 8px">Filtering — click the swatch again or press <kbd>Esc</kbd> to clear.</div>'
-                    : '<div class="meta" style="margin:6px 8px">Click a swatch to spotlight that group.</div>';
+  if(rows.length) html+= colorFilter? '<p class="note">Showing one colour. Click the swatch again or press <kbd>Esc</kbd> to show all.</p>'
+                                    : '<p class="note">Click a swatch to show only those papers.</p>';
   legendPop.innerHTML=html;
   legendPop.querySelectorAll("[data-lgf]").forEach(b=>b.onclick=()=>{
-    colorFilter= colorFilter===b.dataset.lgf? null : b.dataset.lgf; renderLegend(); positionLegend(); requestDraw(); });
+    colorFilter= colorFilter===b.dataset.lgf? null : b.dataset.lgf; renderLegend(); positionPop(legendPop,legendBtn); requestDraw(); });
   legendPop.querySelectorAll("[data-lgn]").forEach(inp=>inp.addEventListener("input",()=>{
     const v=inp.value.trim(); if(v) legendNames[inp.dataset.lgn]=v; else delete legendNames[inp.dataset.lgn]; save(); }));
 }
-function positionLegend(){ const r=legendBtn.getBoundingClientRect();
-  legendPop.style.left=r.left+"px"; legendPop.style.top=Math.max(8, r.top-legendPop.offsetHeight-8)+"px"; }
-legendBtn.onclick=e=>{ e.stopPropagation(); infoPop.classList.remove("open"); layoutMenu.classList.remove("open"); exportMenu.classList.remove("open"); addMenu.classList.remove("open");
-  legendBtn.classList.toggle("active", legendPop.classList.toggle("open"));
-  if(legendPop.classList.contains("open")){ renderLegend(); positionLegend(); } };
-window.addEventListener("resize",()=>{ if(legendPop.classList.contains("open")) positionLegend(); });
-function renderInfo(){ infoPop.innerHTML=`<h4>Legend</h4>
-  <div class="row"><span class="sw" style="background:#fff;border-left:5px solid var(--accent)"></span>Card / circle = a paper · colour = its hue</div>
-  <div class="row"><span class="sw" style="background:#f3f6fd;border-left:5px solid #c7d0e6"></span>Faded = no notes yet</div>
-  <div class="row">↘ arrow = <b style="color:var(--ink)">cites</b> · badge = times cited · glow = highlighted · header-bar card = hero</div>
-  <h4>Tips</h4>
-  <div class="t">🔎 Search matches titles, authors <b>and notes</b> — hits glow green.</div>
-  <div class="t">Hold <kbd>Shift</kbd> + click two papers to link · <kbd>Alt</kbd>-click an arrow to pin its label.</div>
-  <div class="t"><kbd>Layout ▾</kbd> for layouts, edge-bundling & saved layouts · drag to arrange · scroll / pinch to zoom.</div>
-  <div class="t"><kbd>Open</kbd>/<kbd>Save</kbd> edits a .json directly · a dot on 💾 = unsaved changes.</div>
-  <h4>Keyboard shortcuts</h4>
-  <div class="t"><kbd>L</kbd> link · <kbd>A</kbd> arrange · <kbd>F</kbd> fit · <kbd>T</kbd> labels · <kbd>Del</kbd> delete</div>
-  <div class="t"><kbd>Ctrl/⌘+Z</kbd> undo · <kbd>Ctrl/⌘+Y</kbd> redo · <kbd>Ctrl/⌘+S</kbd> save · <kbd>Esc</kbd> dismiss</div>
-  <div class="t"><kbd>Ctrl</kbd>+drag = multi-select · search <b>#tag</b> · 🎯 Focus dims non-neighbours · 🔍 Auto-link in ＋ Add.</div>
-  <div class="t">Nodes snap to the grid & to each other while dragging — hold <kbd>Ctrl</kbd> to bypass, toggle in Layout ▾. Undo covers moves & edits too.</div>`; }
-infoBtn.onclick=e=>{ e.stopPropagation(); layoutMenu.classList.remove("open"); exportMenu.classList.remove("open");
-  const open=infoPop.classList.toggle("open"); if(open){ renderInfo(); const r=infoBtn.getBoundingClientRect();
-    infoPop.style.left=r.left+"px"; infoPop.style.top=Math.max(8, r.top-infoPop.offsetHeight-8)+"px"; } };
-document.addEventListener("touchstart",e=>{ if(infoPop.classList.contains("open") && !infoPop.contains(e.target) && e.target.id!=="infoBtn") infoPop.classList.remove("open"); },{passive:true});
+legendBtn.onclick=e=>{ e.stopPropagation(); togglePop(legendPop,legendBtn,renderLegend); };
+const MOD=/Mac|iPhone|iPad/.test(navigator.platform||"")?"⌘":"Ctrl";
+function renderInfo(){
+  const key=(label,keys)=>`<div class="key-row"><span>${label}</span><span>${keys}</span></div>`;
+  const k=s=>`<kbd>${s}</kbd>`;
+  const mini=(style)=>`<i style="${style}"></i>`;
+  infoPop.innerHTML=`<h4>Reading the network</h4>
+    <div class="legend-line">${mini("width:26px;height:16px;border:1px solid #D9DFDC;border-left:4px solid #3E6FB0;border-radius:3px;background:#fff")}A paper, with its colour on the left edge</div>
+    <div class="legend-line">${mini("width:26px;height:16px;border:1px solid #D9DFDC;border-left:4px solid #C9D1CD;border-radius:3px;background:#F7F9F8")}Pale: no notes written yet</div>
+    <div class="legend-line">${mini("width:26px;height:2px;background:#55615C;position:relative")}Arrow from the citing paper to the cited one</div>
+    <div class="legend-line">${mini("width:16px;height:16px;border-radius:50%;background:#3E6FB0;margin:0 5px")}Number on a paper: how often it is cited</div>
+    <div class="legend-line">${mini("width:9px;height:9px;border-radius:50%;background:#1E6A50;margin:0 8px")}Read ${mini("width:9px;height:9px;border-radius:50%;background:#C3962A;margin-left:8px")}Skimmed</div>
+    <div class="legend-line">${mini("width:26px;height:14px;background:#F2DF4B;border-radius:3px")}Search match or pinned link note</div>
+    <div class="divider"></div>
+    <h4>Mouse and keyboard</h4>
+    ${key("Link two papers",k("Shift")+" + click, or "+k("L"))}
+    ${key("Pin a link note",k("Alt")+" + click the arrow")}
+    ${key("Select several",k(MOD)+" + drag or click")}
+    ${key("Re-run the layout",k("A"))}
+    ${key("Fit all papers in view",k("F"))}
+    ${key("Show all link notes",k("T"))}
+    ${key("Delete selection",k("Del"))}
+    ${key("Undo, redo",k(MOD+"+Z")+" "+k(MOD+"+Y"))}
+    ${key("Save",k(MOD+"+S"))}
+    ${key("Cancel, clear selection",k("Esc"))}
+    <div class="divider"></div>
+    <p>Search matches titles, authors, notes and link notes. Start with <b>#</b> to filter by tag.</p>`;
+}
+infoBtn.onclick=e=>{ e.stopPropagation(); togglePop(infoPop,infoBtn,renderInfo); };
 
 /* ============================ Responsive panel helpers ============================ */
 function isNarrow(){ return window.innerWidth<=900; }
-function panelShow(){ const s=document.getElementById("side"); s.classList.remove("collapsed"); document.getElementById("btnSide").textContent="⮜"; setTimeout(resize,10); }
-function panelHide(){ const s=document.getElementById("side"); s.classList.add("collapsed"); document.getElementById("btnSide").textContent="⮞"; setTimeout(resize,10); }
-/* ============================ Labels / Shape toggles ============================ */
-function setLabelsBtn(){ const b=document.getElementById("btnLabels"); b.classList.toggle("active",showLabels); const l=b.querySelector(".lbl"); if(l) l.textContent= showLabels?"Labels on":"Labels"; }
-document.getElementById("btnLabels").onclick=()=>{ showLabels=!showLabels; setLabelsBtn(); save(); requestDraw(); };
-function setShapeBtn(){ const b=document.getElementById("btnShape"); const ic=b.querySelector(".ic"), l=b.querySelector(".lbl"); if(ic) ic.textContent= globalShape==="dot"?"◯":"▭"; if(l) l.textContent= globalShape==="dot"?"Circles":"Cards"; }
-document.getElementById("btnShape").onclick=()=>{ pushUndo(); globalShape= globalShape==="dot"?"card":"dot"; state.papers.forEach(p=>delete p.shape); setShapeBtn(); save(); requestDraw(); };
+function setSideBtn(open){ const b=document.getElementById("btnSide"); b.setAttribute("aria-pressed",String(open)); b.title= open? "Hide the paper panel":"Show the paper panel"; }
+function panelShow(){ document.getElementById("side").classList.remove("collapsed"); setSideBtn(true); setTimeout(resize,10); }
+function panelHide(){ document.getElementById("side").classList.add("collapsed"); setSideBtn(false); setTimeout(resize,10); }
 
-/* ============================ Fit ============================ */
+/* ============================ Toggles ============================ */
+function setLabelsBtn(){ const b=document.getElementById("btnLabels"); b.setAttribute("aria-pressed",String(showLabels));
+  b.title= showLabels? "Hide link notes except pinned ones (T)" : "Show all link notes (T)"; }
+document.getElementById("btnLabels").onclick=()=>{ showLabels=!showLabels; setLabelsBtn(); save(); requestDraw(); };
+function setShapeBtn(){ const b=document.getElementById("btnShape"); const dot=globalShape==="dot";
+  b.querySelector(".ic").innerHTML=ic(dot?"dot":"card"); b.querySelector(".lbl").textContent= dot?"Circles":"Cards";
+  b.title= dot? "Papers drawn as circles. Click to show cards with titles." : "Papers drawn as cards. Click to show compact circles."; }
+document.getElementById("btnShape").onclick=()=>{ pushUndo(); globalShape= globalShape==="dot"?"card":"dot"; state.papers.forEach(p=>delete p.shape); setShapeBtn(); save(); renderSide(); requestDraw(); };
+
+/* ============================ View ============================ */
 function fit(){
-  if(!state.papers.length){ view={x:0,y:0,scale:1}; return; }
+  if(!state.papers.length){ view={x:0,y:0,scale:1}; requestDraw(); return; }
   let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
   for(const p of state.papers){ minx=Math.min(minx,p.x); maxx=Math.max(maxx,p.x); miny=Math.min(miny,p.y); maxy=Math.max(maxy,p.y); }
-  const padW=CARDW+80, padH=CARDH+80; const gw=(maxx-minx)+padW, gh=(maxy-miny)+padH;
+  const padW=CARDW+80, padH=CARDH+110; const gw=(maxx-minx)+padW, gh=(maxy-miny)+padH;
   view.scale=Math.min(1.4, Math.max(0.12, Math.min(W/gw, H/gh)));
   const cx=(minx+maxx)/2, cy=(miny+maxy)/2; view.x=-cx*view.scale; view.y=-cy*view.scale;
   requestDraw();
 }
+function zoomBy(f){ const sx=W/2, sy=H/2; const [wx,wy]=s2w(sx,sy);
+  view.scale=Math.min(4,Math.max(0.12,view.scale*f)); const [nx,ny]=w2s(wx,wy); view.x+=sx-nx; view.y+=sy-ny; requestDraw(); }
 document.getElementById("btnFit").onclick=fit;
+document.getElementById("zoomIn").onclick=()=>zoomBy(1.25);
+document.getElementById("zoomOut").onclick=()=>zoomBy(0.8);
 
 /* ============================ Side panel ============================ */
 function refLabel(p){ return (p.title||"Untitled")+(p.year?" ("+p.year+")":""); }
+function goTo(id){ selId=id; selEdge=null; selSet.clear(); renderSide(); focusNode(id); requestDraw(); }
+function bindGo(el){ el.querySelectorAll("[data-go]").forEach(s=>{ s.onclick=()=>goTo(s.dataset.go);
+  s.onkeydown=ev=>{ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); goTo(s.dataset.go); } }; }); }
+function refTitle(p,extra){ return `<span class="ref-title" data-go="${p.id}" role="link" tabindex="0">${esc(p.title||"Untitled")}${p.year?` <span class="ref-year">${esc(p.year)}</span>`:""}${extra||""}</span>`; }
+const STATUS=[["toread","To read","toread"],["skimmed","Skimmed","skimmed"],["read","Read","read"]];
+const EMPH=[["","Normal"],["hi","Glow"],["hero","Hero"],["low","Faded"]];
+function statusSeg(cur,attr){ return `<div class="seg" role="group" aria-label="Reading status">${STATUS.map(([v,l,i])=>
+  `<button class="st-${v}" ${attr}="${v}" aria-pressed="${cur===v}">${ic(i)}${l}</button>`).join("")}</div>`; }
+function emphSeg(cur,attr){ return `<div class="seg" role="group" aria-label="Style" style="margin-top:10px">${EMPH.map(([v,l])=>
+  `<button ${attr}="${v}" aria-pressed="${cur===v}">${l}</button>`).join("")}</div>`; }
+function swatchRow(cur,attr,withCustom,p){
+  return `<div class="swatches">${PALETTE.map(c=>`<button class="sw" ${attr}="${c}" aria-pressed="${(cur||"").toLowerCase()===c.toLowerCase()}" title="Use this colour" style="background:${c}"></button>`).join("")}
+    ${withCustom?`<input type="color" class="sw-custom" id="colPick" value="${esc(p.color||colorFor(p))}" title="Pick any colour">`:""}
+    <button class="sw-auto" ${attr}="" title="Automatic colour" aria-pressed="${!cur}">Auto</button></div>`; }
+
 function renderStatsPanel(el){
   const N=state.papers.length, E=state.edges.length;
   const withNotes=state.papers.filter(p=>p.note&&p.note.trim()).length;
@@ -1254,138 +1604,122 @@ function renderStatsPanel(el){
   const top=state.papers.map(p=>[p,inDegree(p.id)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const orph=state.papers.filter(p=>inDegree(p.id)===0&&outDegree(p.id)===0).slice(0,8);
   const tags=new Map(); state.papers.forEach(p=>(p.tags||[]).forEach(t=>tags.set(t,(tags.get(t)||0)+1)));
-  el.innerHTML=`<p class="empty">Select a paper to read its notes — or explore the library:</p>
-    <div class="section"><h3>Library</h3><p class="meta">${N} papers · ${E} links · notes on ${withNotes}/${N}<br>📕 ${st.toread} to read · 📖 ${st.skimmed} skimmed · ✅ ${st.read} read</p></div>
-    ${tags.size?`<div class="section"><h3>Tags</h3><p class="meta">${[...tags.entries()].sort((a,b)=>b[1]-a[1]).map(([t,c])=>`<a href="#" data-tag="${esc(t)}">#${esc(t)}</a> (${c})`).join(" · ")}</p></div>`:""}
-    ${top.length?`<div class="section"><h3>Most cited</h3>${top.map(([p,c])=>`<div class="refitem"><span class="lbl" data-go="${p.id}">${esc(refLabel(p))} — ${c}×</span></div>`).join("")}</div>`:""}
-    ${orph.length?`<div class="section"><h3>Unconnected</h3>${orph.map(p=>`<div class="refitem"><span class="lbl" data-go="${p.id}">${esc(refLabel(p))}</span></div>`).join("")}</div>`:""}
-    <div class="section"><h3>Tips</h3><p class="meta">
-    • <kbd>Ctrl</kbd>+drag empty space selects several papers; <kbd>Ctrl</kbd>+click adds/removes one.<br>
-    • Search <b>#tag</b> filters by tag · 🎯 Focus dims everything beyond a paper's neighbourhood.<br>
-    • <kbd>＋ Add ▾</kbd> → 🔍 Auto-link draws citation links automatically via OpenAlex (needs DOIs).</p></div>`;
-  el.querySelectorAll("[data-go]").forEach(s=>s.onclick=()=>{ selId=s.dataset.go; selEdge=null; renderSide(); focusNode(selId); requestDraw(); });
-  el.querySelectorAll("[data-tag]").forEach(a=>a.onclick=ev=>{ ev.preventDefault();
-    const si=document.getElementById("search"); si.value="#"+a.dataset.tag; searchQ=si.value; requestDraw(); });
+  const stat=(n,l)=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`;
+  if(!N){ el.innerHTML=`<div class="p-head"><h2 class="p-title">${esc(libraryName()||"Untitled library")}</h2>
+      <p class="p-meta">No papers yet.</p></div>
+      <p class="help-text">Use <b>Add</b> in the toolbar to enter a paper or paste a BibLaTeX export. Selected papers show their notes and citations here.</p>`; return; }
+  el.innerHTML=`<div class="p-head"><h2 class="p-title">${esc(libraryName()||"Untitled library")}</h2>
+      <p class="p-meta">Select a paper to read and edit its notes.</p></div>
+    <div class="section"><div class="stat-grid">${stat(N,"papers")}${stat(E,"links")}${stat(withNotes,"with notes")}</div></div>
+    <div class="section"><h3>Reading progress</h3><div class="stat-grid">${stat(st.toread,"to read")}${stat(st.skimmed,"skimmed")}${stat(st.read,"read")}</div></div>
+    ${tags.size?`<div class="section"><h3>Tags</h3><div class="tag-list">${[...tags.entries()].sort((a,b)=>b[1]-a[1]).map(([t,c])=>`<button class="tag" data-tag="${esc(t)}" title="Show papers tagged ${esc(t)}">${esc(t)} <span class="n">${c}</span></button>`).join("")}</div></div>`:""}
+    ${top.length?`<div class="section"><h3>Most cited</h3><div class="refs">${top.map(([p,c])=>`<div class="ref simple"><div class="ref-top">${refTitle(p)}<span class="ref-year" title="Cited ${c} times">${c}×</span></div></div>`).join("")}</div></div>`:""}
+    ${orph.length?`<div class="section"><h3>Not linked yet</h3><div class="refs">${orph.map(p=>`<div class="ref simple"><div class="ref-top">${refTitle(p)}</div></div>`).join("")}</div></div>`:""}
+    <div class="section"><h3>Getting around</h3><ul class="tips">
+      <li>Hold <kbd>Shift</kbd> and click two papers to link them.</li>
+      <li><kbd>${MOD}</kbd> + drag selects several papers at once.</li>
+      <li>The help button at the bottom left lists every shortcut.</li></ul></div>`;
+  bindGo(el);
+  el.querySelectorAll("[data-tag]").forEach(a=>a.onclick=()=>{ setSearch("#"+a.dataset.tag); });
 }
 function renderMultiPanel(el){
-  el.innerHTML=`<h2>${selSet.size} papers selected</h2>
-    <p class="meta">Drag any selected paper to move the whole group. <kbd>Del</kbd> deletes all · <kbd>Esc</kbd> clears.</p>
-    <div class="section"><h3>Add tag to all</h3><div style="display:flex;gap:6px"><input id="bulkTag" placeholder="tag name" style="flex:1"><button class="primary" id="bulkTagDo">Add</button></div></div>
-    <div class="section"><h3>Set status</h3><div style="display:flex;gap:4px">
-      <button data-bst="toread" style="flex:1">📕 To read</button>
-      <button data-bst="skimmed" style="flex:1">📖 Skimmed</button>
-      <button data-bst="read" style="flex:1">✅ Read</button></div></div>
-    <div class="section"><h3>Colour</h3><div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
-      ${PALETTE.map(c=>`<button data-bcol="${c}" style="background:${c};width:22px;height:22px;border-radius:6px;padding:0;border:1px solid rgba(0,0,0,.15)"></button>`).join("")}
-      <button data-bcol="" style="font-size:11px;padding:3px 8px">Auto</button></div></div>
-    <div class="section"><h3>Style</h3><div style="display:flex;gap:4px">
-      <button data-bem="" style="flex:1;font-size:12px">Normal</button>
-      <button data-bem="hi" style="flex:1;font-size:12px">✨ Glow</button>
-      <button data-bem="hero" style="flex:1;font-size:12px">🌟 Hero</button>
-      <button data-bem="low" style="flex:1;font-size:12px">Faded</button></div></div>
-    <div style="display:flex;gap:6px;margin-top:10px"><button id="bulkClear">Clear selection</button><button id="bulkDel" style="margin-left:auto">Delete all</button></div>`;
+  const n=selSet.size;
+  el.innerHTML=`<div class="p-head"><h2 class="p-title">${n} papers selected</h2>
+      <p class="p-meta">Drag any of them to move the group. <kbd>Del</kbd> deletes, <kbd>Esc</kbd> clears the selection.</p></div>
+    <div class="section"><h3>Add a tag to all</h3><div class="field-row"><input id="bulkTag" placeholder="Tag name"><button class="primary" id="bulkTagDo">Add tag</button></div></div>
+    <div class="section"><h3>Reading status</h3>${statusSeg(null,"data-bst")}</div>
+    <div class="section"><h3>Colour and style</h3>${swatchRow(null,"data-bcol",false)}${emphSeg(null,"data-bem")}</div>
+    <div class="p-actions" style="margin-top:20px"><button id="bulkClear">Clear selection</button><button id="bulkDel" class="danger push">${ic("trash")}Delete ${n} papers</button></div>`;
   const each=f=>{ [...selSet].forEach(id=>{ const p=byId(id); if(p) f(p); }); save(); requestDraw(); };
-  el.querySelector("#bulkTagDo").onclick=()=>{ const t=el.querySelector("#bulkTag").value.trim(); if(!t) return;
-    pushUndo(); each(p=>{ p.tags=p.tags||[]; if(!p.tags.includes(t)) p.tags.push(t); }); renderSide(); };
+  const tagIn=el.querySelector("#bulkTag");
+  const addTag=()=>{ const t=tagIn.value.trim(); if(!t) return; pushUndo(); each(p=>{ p.tags=p.tags||[]; if(!p.tags.includes(t)) p.tags.push(t); }); toast(`Tagged ${n} papers with “${t}”`); renderSide(); };
+  el.querySelector("#bulkTagDo").onclick=addTag; tagIn.onkeydown=ev=>{ if(ev.key==="Enter") addTag(); };
   el.querySelectorAll("[data-bst]").forEach(b=>b.onclick=()=>{ pushUndo(); each(p=>p.status=b.dataset.bst); renderSide(); });
-  el.querySelectorAll("[data-bcol]").forEach(b=>b.onclick=()=>{ pushUndo();
-    each(p=>{ if(b.dataset.bcol) p.color=b.dataset.bcol; else delete p.color; }); renderSide(); });
-  el.querySelectorAll("[data-bem]").forEach(b=>b.onclick=()=>{ pushUndo();
-    each(p=>{ if(b.dataset.bem) p.emph=b.dataset.bem; else delete p.emph; }); renderSide(); });
+  el.querySelectorAll("[data-bcol]").forEach(b=>b.onclick=()=>{ pushUndo(); each(p=>{ if(b.dataset.bcol) p.color=b.dataset.bcol; else delete p.color; }); renderSide(); });
+  el.querySelectorAll("[data-bem]").forEach(b=>b.onclick=()=>{ pushUndo(); each(p=>{ if(b.dataset.bem) p.emph=b.dataset.bem; else delete p.emph; }); renderSide(); });
   el.querySelector("#bulkClear").onclick=()=>{ selSet.clear(); renderSide(); requestDraw(); };
   el.querySelector("#bulkDel").onclick=()=>{ pushUndo(); [...selSet].forEach(id=>deletePaper(id)); selSet.clear();
-    save(); renderSide(); updateStats(); requestDraw(); };
+    save(); renderSide(); updateStats(); updateHint(); requestDraw(); toast(`Deleted ${n} papers. Press ${MOD}+Z to undo.`); };
 }
 function renderSide(){
   editSession=null;
   const el=document.getElementById("sideInner");
-  if(selEdge){ return renderEdgePanel(el); }
-  if(selSet.size>1){ return renderMultiPanel(el); }
-  if(!selId){ return renderStatsPanel(el); }
-  const p=byId(selId); if(!p){ selId=null; return renderSide(); }
+  if(selEdge){ renderEdgePanel(el); return; }
+  if(selSet.size>1){ renderMultiPanel(el); return; }
+  if(!selId){ renderStatsPanel(el); return; }
+  const p=byId(selId); if(!p){ selId=null; renderSide(); return; }
   const cites=state.edges.filter(e=>e.from===p.id);
   const citedBy=state.edges.filter(e=>e.to===p.id);
   function connRow(e,otherId){ const o=byId(otherId); if(!o) return "";
-    return `<div class="refitem"><div class="top">
-        <span class="lbl" data-go="${o.id}">${esc(refLabel(o))}</span>
-        <button class="x" data-unlink="${e.from}|${e.to}" title="Remove link">✕</button></div>
-        <input class="rel" data-rel="${e.from}|${e.to}" placeholder="How is it used? e.g. proves Lemma 2 …" value="${esc(e.label||"")}"></div>`; }
+    return `<div class="ref"><div class="ref-top">${refTitle(o)}
+        <button class="x" data-unlink="${e.from}|${e.to}" title="Remove this link">${ic("x")}</button></div>
+        <input class="rel" data-rel="${e.from}|${e.to}" placeholder="How is it used? For example: proves Lemma 2" value="${esc(e.label||"")}" aria-label="Link note"></div>`; }
+  const meta=[p.year,p.venue].filter(Boolean).join(", ");
+  const dot=effShape(p)==="dot";
   el.innerHTML=`
-    <h2>${esc(p.title)}</h2>
-    <div class="meta">${esc(p.authors)||"—"}</div>
-    <div class="meta">${esc([p.year,p.venue].filter(Boolean).join(" · "))}</div>
-    ${p.doi?`<div class="meta"><a href="#" id="doiLink">${esc(p.doi)}</a></div>`:""}
-    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-      <button id="editBtn">Edit</button>
-      <button id="shapeBtn">${effShape(p)==="dot"?"▭ As card":"◯ As circle"}</button>
-      <button id="linkFromHere">🔗 Link</button>
-      <button id="focusBtn" class="${focusId===p.id?"active":""}" title="Dim everything beyond 2 hops">🎯 Focus</button>
-      <button id="delBtn" style="margin-left:auto">Delete</button>
+    <div class="p-head has-del">
+      <button id="delBtn" class="danger icon-btn head-del" title="Delete this paper (Del)" aria-label="Delete this paper">${ic("trash")}</button>
+      <h2 class="p-title">${esc(p.title||"Untitled")}</h2>
+      <p class="p-authors">${esc(p.authors)||'<span class="muted">No authors</span>'}</p>
+      ${meta?`<p class="p-meta">${esc(meta)}</p>`:""}
+      ${p.doi?`<a href="#" class="p-doi" id="doiLink" title="Open in a new tab">${esc(p.doi)}${ic("external")}</a>`:""}
     </div>
-    <div style="display:flex;gap:4px;margin-top:8px">
-      ${["toread","skimmed","read"].map(s=>`<button data-st="${s}" class="${(p.status||"toread")===s?"active":""}" style="flex:1;padding:4px 2px;font-size:12px">${s==="toread"?"📕 To read":s==="skimmed"?"📖 Skimmed":"✅ Read"}</button>`).join("")}
+    ${statusSeg(p.status||"toread","data-st")}
+    <div class="p-actions">
+      <button id="editBtn" title="Edit title, authors, year and DOI">${ic("edit")}Edit</button>
+      <button id="linkFromHere" title="Draw a citation from this paper to another">${ic("link")}Link</button>
+      <button id="focusBtn" aria-pressed="${focusId===p.id}" title="Fade everything more than two links away">${ic("focus")}Focus</button>
+      <button id="shapeBtn" title="${dot?"Show this paper as a card":"Show this paper as a circle"}">${ic(dot?"card":"dot")}${dot?"Card":"Circle"}</button>
     </div>
-    <div class="section"><h3>Tags</h3><input id="tagsIn" placeholder="comma, separated" value="${esc((p.tags||[]).join(", "))}"></div>
-    <div class="section"><h3>Colour & style</h3>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
-        ${PALETTE.map(c=>`<button data-col="${c}" title="${c}" style="background:${c};width:22px;height:22px;border-radius:6px;padding:0;border:${p.color===c?"2px solid #232a40":"1px solid rgba(0,0,0,.15)"}"></button>`).join("")}
-        <input type="color" id="colPick" value="${p.color||colorFor(p)}" title="Custom colour" style="width:28px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:#fff">
-        <button data-col="" title="Back to automatic colour" style="font-size:11px;padding:3px 8px">Auto</button>
-      </div>
-      <div style="display:flex;gap:4px;margin-top:8px">
-        <button data-em="" class="${!p.emph?"active":""}" style="flex:1;font-size:12px">Normal</button>
-        <button data-em="hi" class="${p.emph==="hi"?"active":""}" style="flex:1;font-size:12px">✨ Glow</button>
-        <button data-em="hero" class="${p.emph==="hero"?"active":""}" style="flex:1;font-size:12px">🌟 Hero</button>
-        <button data-em="low" class="${p.emph==="low"?"active":""}" style="flex:1;font-size:12px">Faded</button>
-      </div>
-    </div>
-    <div class="section"><h3>Notes / Summary</h3>
-      <textarea id="noteArea" rows="6" placeholder="Key claim, method, result, why it matters…">${esc(p.note)}</textarea></div>
-    ${p.abstract?`<div class="section"><h3>Abstract</h3><div class="meta" style="max-height:120px;overflow:auto">${esc(p.abstract)}</div></div>`:""}
-    <div class="section"><h3>Cites (${cites.length})</h3>
-      ${cites.length?cites.map(e=>connRow(e,e.to)).join(""):'<p class="empty">none</p>'}</div>
-    <div class="section"><h3>Cited by (${citedBy.length})</h3>
-      ${citedBy.length?citedBy.map(e=>connRow(e,e.from)).join(""):'<p class="empty">none</p>'}</div>`;
+    <div class="section"><h3><label for="noteArea">Notes</label></h3>
+      <textarea id="noteArea" class="note-area" rows="6" placeholder="Key claim, method, result, why it matters">${esc(p.note)}</textarea></div>
+    <div class="section"><h3><label for="tagsIn">Tags</label></h3><input id="tagsIn" placeholder="Separate tags with commas" value="${esc((p.tags||[]).join(", "))}"></div>
+    <div class="section"><h3>Cites <span class="n">${cites.length}</span></h3>
+      ${cites.length?`<div class="refs">${cites.map(e=>connRow(e,e.to)).join("")}</div>`:'<p class="empty">No outgoing links. Use Link to add one.</p>'}</div>
+    <div class="section"><h3>Cited by <span class="n">${citedBy.length}</span></h3>
+      ${citedBy.length?`<div class="refs">${citedBy.map(e=>connRow(e,e.from)).join("")}</div>`:'<p class="empty">Nothing in this library cites it yet.</p>'}</div>
+    <div class="section"><h3>Colour and style</h3>${swatchRow(p.color,"data-col",true,p)}${emphSeg(p.emph||"","data-em")}</div>
+    ${p.abstract?`<div class="section"><h3>Abstract</h3><p class="abstract">${esc(p.abstract)}</p></div>`:""}`;
   const note=el.querySelector("#noteArea");
   note.addEventListener("input",()=>{ editUndo("note:"+p.id); p.note=note.value; save(); requestDraw(); });
   el.querySelector("#editBtn").onclick=()=>openPaperModal(p);
   el.querySelector("#shapeBtn").onclick=()=>{ pushUndo(); p.shape= effShape(p)==="dot"?"card":"dot"; save(); renderSide(); requestDraw(); };
-  el.querySelector("#delBtn").onclick=()=>{ pushUndo(); deletePaper(p.id); save(); renderSide(); updateStats(); requestDraw(); };
-  el.querySelector("#linkFromHere").onclick=()=>{ toggleLink(true); linkFirst=p.id; updateHint(); requestDraw(); };
+  el.querySelector("#delBtn").onclick=()=>{ const t=p.title; pushUndo(); deletePaper(p.id); save(); renderSide(); updateStats(); updateHint(); requestDraw(); toast(`Deleted “${t.length>40?t.slice(0,39)+"…":t}”. Press ${MOD}+Z to undo.`); };
+  el.querySelector("#linkFromHere").onclick=()=>{ toggleLink(true); linkFirst=p.id; updateHint(); requestDraw(); if(isNarrow()) panelHide(); };
   el.querySelector("#focusBtn").onclick=()=>{ focusId= focusId===p.id? null : p.id; renderSide(); requestDraw(); };
   el.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{ pushUndo(); p.status=b.dataset.st; save(); renderSide(); requestDraw(); });
   const tagsIn=el.querySelector("#tagsIn");
   tagsIn.addEventListener("input",()=>{ editUndo("tags:"+p.id); p.tags=tagsIn.value.split(",").map(s=>s.trim()).filter(Boolean); save(); requestDraw(); });
   el.querySelectorAll("[data-col]").forEach(b=>b.onclick=()=>{ pushUndo();
-    if(b.dataset.col) p.color=b.dataset.col; else delete p.color;
-    save(); renderSide(); requestDraw(); });
+    if(b.dataset.col) p.color=b.dataset.col; else delete p.color; save(); renderSide(); requestDraw(); });
   const colPick=el.querySelector("#colPick");
   colPick.addEventListener("input",()=>{ editUndo("col:"+p.id); p.color=colPick.value; save(); requestDraw(); });
+  colPick.addEventListener("change",()=>renderSide());
   el.querySelectorAll("[data-em]").forEach(b=>b.onclick=()=>{ pushUndo();
-    if(b.dataset.em) p.emph=b.dataset.em; else delete p.emph;
-    save(); renderSide(); requestDraw(); });
-  const dl=el.querySelector("#doiLink"); if(dl) dl.onclick=ev=>{ev.preventDefault(); openDoi(p.doi);};
-  el.querySelectorAll("[data-go]").forEach(s=>s.onclick=()=>{ selId=s.dataset.go; selEdge=null; renderSide(); focusNode(selId); requestDraw(); });
+    if(b.dataset.em) p.emph=b.dataset.em; else delete p.emph; save(); renderSide(); requestDraw(); });
+  const dl=el.querySelector("#doiLink"); if(dl) dl.onclick=ev=>{ ev.preventDefault(); openDoi(p.doi); };
+  bindGo(el);
   el.querySelectorAll("[data-unlink]").forEach(b=>b.onclick=()=>{ const a=b.dataset.unlink.split("|"); pushUndo(); removeEdge(a[0],a[1]); save(); renderSide(); updateStats(); requestDraw(); });
   el.querySelectorAll("[data-rel]").forEach(inp=>inp.addEventListener("input",()=>{ const a=inp.dataset.rel.split("|"); const e=findEdge(a[0],a[1]); if(e){ editUndo("rel:"+inp.dataset.rel); e.label=inp.value; save(); requestDraw(); } }));
 }
 function renderEdgePanel(el){
-  const e=findEdge(selEdge.from,selEdge.to); if(!e){ selEdge=null; return renderSide(); }
+  const e=findEdge(selEdge.from,selEdge.to); if(!e){ selEdge=null; renderSide(); return; }
   const a=byId(e.from), b=byId(e.to);
-  el.innerHTML=`<h2>Relationship</h2>
-    <div class="section"><h3>Citing → Cited</h3>
-      <div class="refitem"><span class="lbl" data-go="${a.id}">${esc(refLabel(a))}</span></div>
-      <div style="text-align:center;color:var(--muted);margin:2px 0">↓ cites ↓</div>
-      <div class="refitem"><span class="lbl" data-go="${b.id}">${esc(refLabel(b))}</span></div></div>
-    <div class="section"><h3>How is it used?</h3>
-      <textarea id="relArea" rows="4" placeholder="e.g. ${esc((a.authors||'A').split(',')[0])} uses the bound proven in ${esc((b.authors||'B').split(',')[0])} to…">${esc(e.label)}</textarea></div>
-    <div style="display:flex;gap:6px;margin-top:10px;align-items:center">
-      <button id="pinBtn">${e.pin?"📌 Label pinned":"📌 Pin label"}</button>
-      <button id="delEdge" style="margin-left:auto">Delete link</button></div>
-    <p class="meta" style="margin-top:6px">Pinned labels stay visible even when 🏷 Labels is off. (Shortcut: <kbd>Alt</kbd>-click the arrow.)</p>`;
+  el.innerHTML=`<div class="p-head"><h2 class="p-title">Citation link</h2></div>
+    <div class="refs">
+      <div class="ref simple"><div class="ref-top">${refTitle(a)}</div></div>
+      <div class="cites-arrow">${ic("arrowDown")}cites</div>
+      <div class="ref simple"><div class="ref-top">${refTitle(b)}</div></div>
+    </div>
+    <div class="section"><h3><label for="relArea">How is it used?</label></h3>
+      <textarea id="relArea" class="note-area" rows="4" placeholder="For example: ${esc(firstAuthor(a)||"A")} uses the bound proven by ${esc(firstAuthor(b)||"B")} to …">${esc(e.label)}</textarea></div>
+    <div class="p-actions">
+      <button id="pinBtn" aria-pressed="${!!e.pin}" title="Keep this note visible when link notes are hidden">${ic("pin")}${e.pin?"Pinned":"Pin note"}</button>
+      <button id="delEdge" class="danger push">${ic("trash")}Delete link</button></div>
+    <p class="help-text" style="margin-top:8px">Pinned notes stay visible while the other link notes are hidden. Shortcut: <kbd>Alt</kbd> + click the arrow.</p>`;
   const ta=el.querySelector("#relArea"); ta.addEventListener("input",()=>{ editUndo("rel:"+e.from+"|"+e.to); e.label=ta.value; save(); requestDraw(); });
-  el.querySelector("#pinBtn").onclick=()=>{ e.pin=!e.pin; save(); renderSide(); requestDraw(); };
-  el.querySelectorAll("[data-go]").forEach(s=>s.onclick=()=>{ selId=s.dataset.go; selEdge=null; renderSide(); focusNode(selId); requestDraw(); });
+  el.querySelector("#pinBtn").onclick=()=>{ pushUndo(); e.pin=!e.pin; save(); renderSide(); requestDraw(); };
+  bindGo(el);
   el.querySelector("#delEdge").onclick=()=>{ pushUndo(); removeEdge(e.from,e.to); selEdge=null; save(); renderSide(); updateStats(); requestDraw(); };
 }
 function focusNode(id){ const p=byId(id); if(!p) return; const [sx,sy]=w2s(p.x,p.y); view.x+=W/2-sx; view.y+=H/2-sy; requestDraw(); }
@@ -1395,68 +1729,100 @@ function openDoi(d){ let url=d;
   else if(!/^https?:/i.test(d)) return;
   window.open(url,"_blank","noopener"); }
 
-/* ============================ Hint / link mode / keys ============================ */
+/* ============================ Hint, empty state, link mode ============================ */
 function updateHint(){
-  const h=document.getElementById("hint");
-  if(linkMode||shiftDown){ cv.classList.add("linking"); h.style.display="block";
-    h.innerHTML= linkFirst? `Now click the <b>cited</b> paper — arrow goes citing → cited. <kbd>Esc</kbd> cancels.`
-      : `<b>Link mode.</b> Click the <b>citing</b> paper, then the cited one.`;
-  } else if(!state.papers.length){ cv.classList.remove("linking"); h.style.display="block";
-    h.innerHTML=`No papers yet — click <b>＋ Add</b> to enter a paper or paste BibLaTeX.`;
-  } else { cv.classList.remove("linking"); h.style.display="none"; }
+  const h=document.getElementById("hint"), empty=document.getElementById("empty");
+  const none=!state.papers.length;
+  empty.hidden=!none;
+  if(linkMode||shiftDown){ cv.classList.add("linking"); h.hidden=false;
+    h.innerHTML= linkFirst? `Now click the paper it <b>cites</b>. <kbd>Esc</kbd> cancels.`
+      : `<b>Link mode.</b> Click the citing paper first.`;
+  } else { cv.classList.remove("linking"); h.hidden=true; }
 }
-function setLinkBtn(){ document.getElementById("btnLink").classList.toggle("active", linkMode||shiftDown); }
+function setLinkBtn(){ document.getElementById("btnLink").setAttribute("aria-pressed",String(linkMode||shiftDown)); }
 function toggleLink(on){ linkMode= on==null? !linkMode : on; if(!linkMode) linkFirst=null; setLinkBtn(); updateHint(); requestDraw(); }
 document.getElementById("btnLink").onclick=()=>toggleLink();
-function isTyping(e){ const t=(e.target.tagName||""); return t==="INPUT"||t==="TEXTAREA"; }
+document.querySelectorAll("[data-empty]").forEach(b=>b.onclick=()=>{ const a=b.dataset.empty;
+  if(a==="manual") openPaperModal(null); else if(a==="bib") openBib(); else openFile(); });
+
+/* ============================ Search ============================ */
+const searchIn=document.getElementById("search");
+function setSearch(q){ searchIn.value=q; searchQ=q.trim(); searchIn.closest(".searchbox").classList.toggle("has-q",!!searchQ); requestDraw(); }
+searchIn.addEventListener("input",()=>setSearch(searchIn.value));
+searchIn.addEventListener("keydown",e=>{ if(e.key==="Escape"){ setSearch(""); searchIn.blur(); } });
+
+/* ============================ Keyboard ============================ */
+function isTyping(e){ const t=(e.target.tagName||""); return t==="INPUT"||t==="TEXTAREA"||e.target.isContentEditable; }
+function anyModalOpen(){ return !!document.querySelector(".modal.open"); }
 window.addEventListener("keydown",e=>{
-  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="s"){ saveCurrent(); e.preventDefault(); return; }
-  if(e.key==="Shift" && !shiftDown){ shiftDown=true; setLinkBtn(); updateHint(); }
-  if(e.key==="Escape"){ layoutMenu.classList.remove("open"); exportMenu.classList.remove("open"); infoPop.classList.remove("open"); addMenu.classList.remove("open");
-    if(colorFilter){ colorFilter=null; if(legendPop.classList.contains("open")) renderLegend(); requestDraw(); } if(linkFirst){linkFirst=null;updateHint();requestDraw();} else if(linkMode) toggleLink(false); closeAllModals(); hideTip();
-    if(focusId){ focusId=null; renderSide(); requestDraw(); }
-    if(selSet.size){ selSet.clear(); renderSide(); requestDraw(); }
-    if(!isTyping(e) && isNarrow()) panelHide(); }
-  if(isTyping(e)) return;
-  if((e.key==="Delete"||e.key==="Backspace")){
-    if(selSet.size){ pushUndo(); [...selSet].forEach(id=>deletePaper(id)); selSet.clear();
-      save(); renderSide(); updateStats(); requestDraw(); e.preventDefault(); }
-    else if(selId){ pushUndo(); deletePaper(selId); save(); renderSide(); updateStats(); requestDraw(); e.preventDefault(); }
-    else if(selEdge){ pushUndo(); removeEdge(selEdge.from,selEdge.to); selEdge=null; save(); renderSide(); updateStats(); requestDraw(); e.preventDefault(); }
+  const mod=e.ctrlKey||e.metaKey, k=(e.key||"").toLowerCase();
+  if(mod && k==="s"){ saveCurrent(); e.preventDefault(); return; }
+  if(e.key==="Shift" && !shiftDown && !isTyping(e)){ shiftDown=true; setLinkBtn(); updateHint(); }
+  if(e.key==="Escape"){
+    const hadMenu=MENUS.some(([m])=>m.classList.contains("open"));
+    closeMenus();
+    if(anyModalOpen()){ closeAllModals(); return; }
+    if(hadMenu) return;
+    if(colorFilter){ colorFilter=null; if(legendPop.classList.contains("open")) renderLegend(); requestDraw(); return; }
+    if(linkFirst){ linkFirst=null; updateHint(); requestDraw(); return; }
+    if(linkMode){ toggleLink(false); return; }
+    hideTip();
+    if(focusId){ focusId=null; renderSide(); requestDraw(); return; }
+    if(selSet.size){ selSet.clear(); renderSide(); requestDraw(); return; }
+    if(!isTyping(e) && isNarrow()) panelHide();
+    return;
   }
-  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z" && !e.shiftKey){ undo(); e.preventDefault(); }
-  if((e.ctrlKey||e.metaKey) && (e.key.toLowerCase()==="y" || (e.shiftKey && e.key.toLowerCase()==="z"))){ redo(); e.preventDefault(); }
-  if(e.key.toLowerCase()==="l"){ toggleLink(); }
-  if(e.key.toLowerCase()==="a" && !(e.ctrlKey||e.metaKey)){ arrange(); }
-  if(e.key.toLowerCase()==="f"){ fit(); }
-  if(e.key.toLowerCase()==="t"){ showLabels=!showLabels; setLabelsBtn(); save(); requestDraw(); }
+  if(isTyping(e) || anyModalOpen()) return;
+  if(e.key==="Delete"||e.key==="Backspace"){
+    if(selSet.size){ const n=selSet.size; pushUndo(); [...selSet].forEach(id=>deletePaper(id)); selSet.clear();
+      save(); renderSide(); updateStats(); updateHint(); requestDraw(); e.preventDefault(); toast(`Deleted ${n} papers. Press ${MOD}+Z to undo.`); }
+    else if(selId){ pushUndo(); deletePaper(selId); save(); renderSide(); updateStats(); updateHint(); requestDraw(); e.preventDefault(); }
+    else if(selEdge){ pushUndo(); removeEdge(selEdge.from,selEdge.to); selEdge=null; save(); renderSide(); updateStats(); requestDraw(); e.preventDefault(); }
+    return;
+  }
+  if(mod && k==="z" && !e.shiftKey){ undo(); e.preventDefault(); return; }
+  if(mod && (k==="y" || (e.shiftKey && k==="z"))){ redo(); e.preventDefault(); return; }
+  if(mod || e.altKey) return;
+  if(k==="l"){ toggleLink(); }
+  else if(k==="a"){ arrange(); }
+  else if(k==="f"){ fit(); }
+  else if(k==="t"){ showLabels=!showLabels; setLabelsBtn(); save(); requestDraw(); }
+  else if(k==="/"){ searchIn.focus(); e.preventDefault(); }
 });
 window.addEventListener("keyup",e=>{ if(e.key==="Shift"){ shiftDown=false; if(!linkMode) linkFirst=null; setLinkBtn(); updateHint(); requestDraw(); } });
+window.addEventListener("blur",()=>{ if(shiftDown){ shiftDown=false; if(!linkMode) linkFirst=null; setLinkBtn(); updateHint(); } });
 
 /* ============================ Modals ============================ */
-function openModal(id){ document.getElementById(id).classList.add("open"); }
-function closeModal(id){ const m=document.getElementById(id); m.classList.remove("open");
-  if(m._resolve){ const r=m._resolve; m._resolve=null; r("cancel"); } }
-function closeAllModals(){ document.querySelectorAll(".modal").forEach(m=>closeModal(m.id)); }
-function ask(message,buttons){
+let lastFocus=null;
+function openModal(id){ lastFocus=document.activeElement; closeMenus(); document.getElementById(id).classList.add("open"); }
+function closeModal(id){ const m=document.getElementById(id); if(!m.classList.contains("open")) return; m.classList.remove("open");
+  if(m._resolve){ const r=m._resolve; m._resolve=null; r("cancel"); }
+  if(lastFocus && lastFocus.focus) try{ lastFocus.focus(); }catch(e){} }
+function closeAllModals(){ document.querySelectorAll(".modal.open").forEach(m=>closeModal(m.id)); }
+function ask(message,buttons,title){
   return new Promise(res=>{
     const m=document.getElementById("confirmModal");
+    document.getElementById("confirmTitle").textContent=title||"Are you sure?";
     document.getElementById("confirmMsg").textContent=message;
     const row=document.getElementById("confirmBtns"); row.innerHTML="";
+    let primaryBtn=null;
     for(const b of buttons){ const btn=document.createElement("button"); btn.textContent=b.label;
-      if(b.primary) btn.className="primary";
+      if(b.primary){ btn.className="primary"; primaryBtn=btn; } else if(b.danger) btn.className="danger";
       btn.onclick=()=>{ m._resolve=null; closeModal("confirmModal"); res(b.id); }; row.appendChild(btn); }
-    m._resolve=res; openModal("confirmModal");
+    m._resolve=res; openModal("confirmModal"); setTimeout(()=>(primaryBtn||row.lastChild).focus(),20);
   });
 }
 window.closeModal=closeModal;
-function openBib(){ document.getElementById("bibText").value=""; document.getElementById("bibCount").textContent=""; openModal("bibModal"); }
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("mousedown",e=>{ if(e.target===m) closeModal(m.id); }));
+
+function openBib(){ document.getElementById("bibText").value=""; document.getElementById("bibCount").textContent=""; openModal("bibModal");
+  setTimeout(()=>document.getElementById("bibText").focus(),30); }
 document.getElementById("bibText").addEventListener("input",function(){
-  try{ const n=parseBib(this.value).length; document.getElementById("bibCount").textContent= n?`${n} entr${n===1?"y":"ies"} detected`:""; }catch(e){} });
+  try{ const n=parseBib(this.value).length; document.getElementById("bibCount").textContent= n?`${n} entr${n===1?"y":"ies"} found`:""; }catch(e){} });
 const normDoi=d=>String(d||"").trim().toLowerCase().replace(/^https?:\/\/(dx\.)?doi\.org\//,"").replace(/^doi:\s*/,"");
 document.getElementById("bibDo").onclick=()=>{
   const entries=parseBib(document.getElementById("bibText").value);
-  if(!entries.length){ toast("No BibLaTeX entries found — paste text starting with @article{…"); return; }
+  if(!entries.length){ toast("No BibLaTeX entries found. Entries start with @article{, @book{ and so on."); return; }
   pushUndo();
   const keys=new Set(state.papers.map(p=>p.key).filter(Boolean));
   const dois=new Set(state.papers.map(p=>normDoi(p.doi)).filter(Boolean));
@@ -1467,22 +1833,12 @@ document.getElementById("bibDo").onclick=()=>{
     const np=addPaper(cand); fresh.push(np);
     if(e.key) keys.add(e.key); if(nd) dois.add(nd); added++;
   }
-  placeNewInCorner(fresh);
-  save(); updateStats(); updateHint(); closeModal("bibModal");
-  toast(`Added ${added} paper${added===1?"":"s"}${skipped?` · skipped ${skipped} duplicate${skipped===1?"":"s"}`:""}`);
+  const wasEmpty=state.papers.length===fresh.length;
+  if(wasEmpty) fit(); placeNewInCorner(fresh); if(wasEmpty) fit();
+  save(); renderSide(); updateStats(); updateHint(); closeModal("bibModal"); requestDraw();
+  toast(`Added ${added} paper${added===1?"":"s"}${skipped?`, skipped ${skipped} already in the library`:""}`);
 };
 let editing=null;
-const addMenu=document.getElementById("addMenu");
-function renderAddMenu(){ addMenu.innerHTML=`<h4>Add papers</h4>
-  <button class="item" data-add="manual">✍️ Enter manually <small>— one paper</small></button>
-  <button class="item" data-add="bib">📥 Paste BibLaTeX <small>— bulk from Zotero</small></button>
-  <button class="item" data-add="auto">🔍 Auto-link citations <small>— via OpenAlex, needs DOIs</small></button>`;
-  addMenu.querySelector('[data-add="manual"]').onclick=()=>{ addMenu.classList.remove("open"); openPaperModal(null); };
-  addMenu.querySelector('[data-add="bib"]').onclick=()=>{ addMenu.classList.remove("open"); openBib(); };
-  addMenu.querySelector('[data-add="auto"]').onclick=()=>{ addMenu.classList.remove("open"); runAutoLink(); };
-}
-document.getElementById("btnAdd").onclick=e=>{ e.stopPropagation(); layoutMenu.classList.remove("open"); exportMenu.classList.remove("open"); infoPop.classList.remove("open");
-  const open=addMenu.classList.toggle("open"); if(open){ renderAddMenu(); positionMenu(addMenu,"btnAdd"); } };
 function placeNewInCorner(fresh){
   if(!fresh.length) return;
   const stepX=CARDW+40, stepY=CARDH+34;
@@ -1496,11 +1852,12 @@ function placeNewInCorner(fresh){
     p.x=x; p.y=y; }
 }
 function openPaperModal(p){ editing=p;
-  document.getElementById("paperModalTitle").textContent= p?"Edit Paper":"Add Paper";
+  document.getElementById("paperModalTitle").textContent= p?"Edit paper":"Add paper";
+  document.getElementById("paperDo").textContent= p?"Save changes":"Add paper";
   document.getElementById("pTitle").value=p?p.title:""; document.getElementById("pAuthors").value=p?p.authors:"";
   document.getElementById("pYear").value=p?p.year:""; document.getElementById("pVenue").value=p?p.venue:"";
   document.getElementById("pDoi").value=p?p.doi:""; document.getElementById("pNote").value=p?p.note:"";
-  openModal("paperModal"); setTimeout(()=>document.getElementById("pTitle").focus(),30); }
+  openModal("paperModal"); setTimeout(()=>document.getElementById(p?"pTitle":"pDoi").focus(),30); }
 document.getElementById("paperDo").onclick=()=>{
   const data={ title:document.getElementById("pTitle").value.trim()||"Untitled",
     authors:document.getElementById("pAuthors").value.trim(), year:document.getElementById("pYear").value.trim(),
@@ -1508,93 +1865,129 @@ document.getElementById("paperDo").onclick=()=>{
     note:document.getElementById("pNote").value };
   pushUndo();
   if(editing){ Object.assign(editing,data); }
-  else { const p=addPaper(Object.assign({key:"",abstract:""},data)); selId=p.id; selEdge=null; const c=s2w(W/2,H/2); p.x=c[0]; p.y=c[1]; }
+  else { const p=addPaper(Object.assign({key:"",abstract:""},data)); selId=p.id; selEdge=null; selSet.clear(); const c=s2w(W/2,H/2); p.x=c[0]; p.y=c[1]; if(isNarrow()) panelShow(); }
   save(); renderSide(); updateStats(); updateHint(); closeModal("paperModal"); requestDraw(); };
-
+document.getElementById("paperModal").addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.tagName==="INPUT"){ e.preventDefault(); document.getElementById("paperDo").click(); } });
 
 /* ==== src/js/07-files.js ==== */
-/* ============================ Open / Save / Export ============================ */
+/* ============================ New / Open / Save / Export ============================ */
 function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
-  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),1900); }
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"), Math.min(5000, 1800+msg.length*35)); }
 function downloadBlob(text,name,type){ const blob=new Blob([text],{type}); const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
-function downloadBib(){ if(!state.papers.length){ toast("No papers to export"); return; }
-  downloadBlob(toBib(),(currentFileName? currentFileName.replace(/\.json$/i,""):"litnet-"+new Date().toISOString().slice(0,10))+".bib","text/plain"); toast("BibLaTeX file downloaded"); }
-function copyBib(){ if(!state.papers.length){ toast("No papers to export"); return; } const text=toBib();
-  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(()=>toast("BibLaTeX copied to clipboard")).catch(()=>fallbackCopy(text)); }
+  a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
+function baseName(){ return libraryName() || ("litnet-"+new Date().toISOString().slice(0,10)); }
+function downloadBib(){ if(!state.papers.length){ toast("There are no papers to export yet"); return; }
+  downloadBlob(toBib(),baseName()+".bib","text/plain"); toast(`Exported ${state.papers.length} entries to ${baseName()}.bib`); }
+function copyBib(){ if(!state.papers.length){ toast("There are no papers to copy yet"); return; } const text=toBib();
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(()=>toast(`Copied ${state.papers.length} BibLaTeX entries`)).catch(()=>fallbackCopy(text)); }
   else fallbackCopy(text); }
 function fallbackCopy(text){ const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
-  document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); toast("BibLaTeX copied to clipboard"); }catch(e){ toast("Copy failed — use BibLaTeX → file"); } document.body.removeChild(ta); }
+  document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); toast(`Copied ${state.papers.length} BibLaTeX entries`); }catch(e){ toast("The browser blocked the clipboard. Use Export, BibLaTeX file instead."); } document.body.removeChild(ta); }
 
+function resetSelection(){ selId=null; selEdge=null; selSet.clear(); focusId=null; linkFirst=null; colorFilter=null; heb=null; }
 function applyJSON(d, replace){
-  if(!d || !d.papers) throw new Error("bad json");
+  if(!d || !Array.isArray(d.papers)) throw new Error("bad json");
   pushUndo();
   if(replace){
-    state.papers=d.papers; state.edges=(d.edges||[]).map(e=>Object.assign({label:"",pin:false},e)); uid=d.uid||1;
+    state.papers=d.papers; state.edges=(d.edges||[]).map(e=>Object.assign({label:"",pin:false},e));
+    uid=d.uid|| (state.papers.reduce((m,p)=>Math.max(m,parseInt((p.id||"p0").slice(1))||0),0)+1);
     bookmarks=d.bookmarks||[]; if(typeof d.showLabels==="boolean") showLabels=d.showLabels;
     if(d.globalShape) globalShape=d.globalShape; if(typeof d.bundleStrength==="number") bundleStrength=d.bundleStrength;
     if(typeof d.colorByTag==="boolean") colorByTag=d.colorByTag;
     if(typeof d.snapOn==="boolean") snapOn=d.snapOn;
-    if(d.legendNames && typeof d.legendNames==="object") legendNames=d.legendNames;
+    legendNames=(d.legendNames && typeof d.legendNames==="object")? d.legendNames : {};
     if(d.lastLayout) lastLayout=d.lastLayout;
   } else {
     const map={}; for(const p of d.papers){ const np=Object.assign({},p); const old=np.id; np.id=nextId(); map[old]=np.id; state.papers.push(np); }
     for(const e of (d.edges||[])){ if(map[e.from]&&map[e.to]){ state.edges.push({from:map[e.from],to:map[e.to],label:e.label||"",pin:!!e.pin}); } }
   }
-  selId=null; selEdge=null; selSet.clear(); focusId=null; heb=null; setLabelsBtn(); setShapeBtn(); save(); renderSide(); updateStats(); updateHint();
+  resetSelection(); setLabelsBtn(); setShapeBtn(); save(); renderSide(); updateStats(); updateHint();
   if(lastLayout==="circle" && state.papers.length) heb=buildHEB(currentCircularOrder());
   fit();
+}
+
+/* ---- New library ---- */
+function hasUnsavedWork(){ return state.papers.length>0 && (dirty || !currentFileName); }
+async function newLibrary(){
+  if(hasUnsavedWork()){
+    const where= currentFileName? `Changes to “${libraryName()}” have not been saved.` : "This library has not been saved to a file. It only exists in this browser.";
+    const c=await ask(where+" Starting a new library replaces it.",
+      [{id:"cancel",label:"Cancel"},{id:"discard",label:"Discard",danger:true},{id:"save",label:"Save first",primary:true}],
+      "Start a new library?");
+    if(c==="cancel") return;
+    if(c==="save"){ const ok=await saveCurrent(); if(!ok) return; }
+  }
+  pushUndo();
+  state={papers:[],edges:[]}; uid=1; bookmarks=[]; legendNames={};
+  resetSelection(); fileHandle=null; currentFileName=null;
+  setSearch(""); if(linkMode) toggleLink(false);
+  view={x:0,y:0,scale:1};
+  save(); flushSave(); markClean();
+  updateFileName(); updateStats(); updateHint(); renderSide(); requestDraw();
+  toast(`New library started. Press ${MOD}+Z to bring the previous papers back.`);
+}
+
+/* ---- Open ---- */
+async function confirmReplace(name,allowMerge){
+  if(!state.papers.length) return "replace";
+  const msg= hasUnsavedWork()? "The current library has unsaved changes. Opening a file replaces it unless you merge." : "Opening a file replaces the current library unless you merge.";
+  const btns=[{id:"cancel",label:"Cancel"}];
+  if(allowMerge) btns.push({id:"merge",label:"Merge into current"});
+  btns.push({id:"replace",label:"Replace",primary:true});
+  return ask(msg,btns,`Open “${name}”?`);
 }
 async function openFile(){
   if(hasFSA){
     let h;
-    try{ const arr=await window.showOpenFilePicker({types:[{description:"LitNet JSON",accept:{"application/json":[".json"]}}]}); h=arr[0]; }
+    try{ const arr=await window.showOpenFilePicker({types:[{description:"LitNet library",accept:{"application/json":[".json"]}}]}); h=arr[0]; }
     catch(err){ return; }
     try{ const file=await h.getFile(); const d=JSON.parse(await file.text());
-      if(state.papers.length){
-        const c=await ask(`Open “${h.name}” and replace the current library?`,
-          [{id:"cancel",label:"Cancel"},{id:"replace",label:"Replace",primary:true}]);
-        if(c!=="replace") return;
-      }
-      fileHandle=h; currentFileName=h.name; applyJSON(d,true); updateFileName(); markClean(); toast("Opened "+h.name+" — Ctrl+S saves back to it"); }
-    catch(err){ console.warn(err); toast("Could not read that file"); }
+      const c=await confirmReplace(h.name,true); if(c==="cancel") return;
+      if(c==="merge"){ applyJSON(d,false); toast(`Merged ${d.papers.length} papers from ${h.name}`); return; }
+      fileHandle=h; currentFileName=h.name; applyJSON(d,true); updateFileName(); markClean(); renderSide();
+      toast(`Opened ${h.name}. Saving writes back to this file.`); }
+    catch(err){ console.warn(err); toast("That file could not be read. Choose a library .json saved from LitNet."); }
   } else { document.getElementById("fileIn").click(); }
 }
 document.getElementById("fileIn").onchange=function(){
   const f=this.files[0]; if(!f) return; const rd=new FileReader();
   rd.onload=async()=>{ try{ const d=JSON.parse(rd.result);
-      let replace=true;
-      if(state.papers.length){
-        const c=await ask(`Open “${f.name}” — replace the current library or merge it in?`,
-          [{id:"cancel",label:"Cancel"},{id:"merge",label:"Merge in"},{id:"replace",label:"Replace",primary:true}]);
-        if(c==="cancel") return; replace= c==="replace";
-      }
-      applyJSON(d,replace); fileHandle=null; currentFileName=f.name; updateFileName();
-      toast("Opened "+f.name+(hasFSA?"":" — Save will download (no live file link in this browser)")); }
-    catch(e){ toast("Could not read that JSON file"); } };
+      const c=await confirmReplace(f.name,true); if(c==="cancel") return;
+      if(c==="merge"){ applyJSON(d,false); toast(`Merged ${d.papers.length} papers from ${f.name}`); return; }
+      applyJSON(d,true); fileHandle=null; currentFileName=f.name; updateFileName(); markClean(); renderSide();
+      toast(`Opened a copy of ${f.name}. This browser saves by downloading a new file.`); }
+    catch(e){ toast("That file could not be read. Choose a library .json saved from LitNet."); } };
   rd.readAsText(f); this.value=""; };
+
+/* ---- Save (each returns true when the library was written) ---- */
 async function saveToHandle(){
   try{
     if(fileHandle.queryPermission){ let perm=await fileHandle.queryPermission({mode:"readwrite"});
-      if(perm!=="granted"){ perm=await fileHandle.requestPermission({mode:"readwrite"}); if(perm!=="granted"){ toast("Write permission denied"); return; } } }
+      if(perm!=="granted"){ perm=await fileHandle.requestPermission({mode:"readwrite"}); if(perm!=="granted"){ toast("Not saved: the browser did not allow writing to the file"); return false; } } }
     const w=await fileHandle.createWritable(); await w.write(JSON.stringify(persistObj(),null,2)); await w.close();
-    markClean(); toast("Saved to "+currentFileName);
-  }catch(err){ console.warn(err); toast("Save failed — try Save As"); }
+    markClean(); toast("Saved to "+currentFileName); return true;
+  }catch(err){ console.warn(err); toast("Not saved: the file could not be written. Try Export, Save as."); return false; }
 }
 async function saveAs(){
   if(hasFSA){
-    try{ const h=await window.showSaveFilePicker({ suggestedName: currentFileName || ("litnet-"+new Date().toISOString().slice(0,10)+".json"),
-        types:[{description:"LitNet JSON",accept:{"application/json":[".json"]}}] });
-      fileHandle=h; currentFileName=h.name; updateFileName(); await saveToHandle(); }
-    catch(err){ if(err && err.name!=="AbortError"){ console.warn(err); } }
-  } else { downloadBlob(JSON.stringify(persistObj(),null,2),"litnet-"+new Date().toISOString().slice(0,10)+".json","application/json"); markClean(); toast("Backup downloaded"); }
+    try{ const h=await window.showSaveFilePicker({ suggestedName: currentFileName || (baseName()+".json"),
+        types:[{description:"LitNet library",accept:{"application/json":[".json"]}}] });
+      fileHandle=h; currentFileName=h.name; updateFileName(); const ok=await saveToHandle(); renderSide(); return ok; }
+    catch(err){ if(err && err.name!=="AbortError"){ console.warn(err); toast("Not saved: the file could not be created"); } return false; }
+  }
+  const name=currentFileName || (baseName()+".json");
+  downloadBlob(JSON.stringify(persistObj(),null,2),name,"application/json");
+  currentFileName=name; updateFileName(); markClean(); renderSide(); toast("Downloaded "+name); return true;
 }
+function saveCurrent(){ return fileHandle? saveToHandle() : saveAs(); }
+
+/* ---- Related-work draft ---- */
 function draftMarkdown(){
   const used=new Set();
   const groups=new Map();
   for(const p of state.papers){ const t=(p.tags&&p.tags[0])||"Ungrouped";
     if(!groups.has(t)) groups.set(t,[]); groups.get(t).push(p); }
-  let md="# Related Work (draft)\n\n_Generated by LitNet on "+new Date().toISOString().slice(0,10)+". Group order = tag; \\cite keys match the BibLaTeX export._\n";
+  let md="# Related Work (draft)\n\n_Generated by LitNet on "+new Date().toISOString().slice(0,10)+". Grouped by first tag; \\cite keys match the BibLaTeX export._\n";
   for(const [t,ps] of [...groups.entries()].sort((a,b)=>String(a[0]).localeCompare(String(b[0])))){
     md+="\n## "+t+"\n\n";
     ps.sort((a,b)=>String(a.year).localeCompare(String(b.year)));
@@ -1608,15 +2001,14 @@ function draftMarkdown(){
   }
   return md;
 }
-function downloadDraft(){ if(!state.papers.length){ toast("No papers yet"); return; }
-  downloadBlob(draftMarkdown(),"related-work-draft.md","text/markdown"); toast("Draft downloaded — grouped by first tag"); }
-function saveCurrent(){ if(fileHandle) saveToHandle(); else saveAs(); }
+function downloadDraft(){ if(!state.papers.length){ toast("There are no papers to draft from yet"); return; }
+  downloadBlob(draftMarkdown(),baseName()+"-related-work.md","text/markdown"); toast("Downloaded the related-work draft"); }
+
+document.getElementById("btnNew").onclick=newLibrary;
 document.getElementById("btnOpen").onclick=openFile;
 document.getElementById("btnSave").onclick=saveCurrent;
-document.getElementById("search").addEventListener("input",function(){ searchQ=this.value.trim(); requestDraw(); });
-document.getElementById("btnSide").onclick=()=>{ const s=document.getElementById("side"); if(s.classList.contains("collapsed")) panelShow(); else panelHide(); };
-document.querySelectorAll(".modal").forEach(m=>m.addEventListener("mousedown",e=>{ if(e.target===m) closeModal(m.id); }));
-
+document.getElementById("btnSide").onclick=()=>{ if(document.getElementById("side").classList.contains("collapsed")) panelShow(); else panelHide(); };
+window.addEventListener("beforeunload",e=>{ flushSave(); if(dirty && fileHandle){ e.preventDefault(); e.returnValue=""; } });
 
 /* ==== src/js/07-net.js ==== */
 /* ============================ OpenAlex (auto-link & metadata) ============================ */
@@ -1643,8 +2035,8 @@ function oaCountLinks(byOaId,refs){
 }
 async function runAutoLink(){
   const cand=state.papers.map(p=>({p,doi:realDoi(p.doi)})).filter(x=>x.doi);
-  if(cand.length<2){ toast("Need at least 2 papers with DOIs or arXiv IDs"); return; }
-  toast(`Looking up ${cand.length} papers on OpenAlex…`);
+  if(cand.length<2){ toast("Finding links needs at least two papers with a DOI or arXiv ID"); return; }
+  toast(`Looking up ${cand.length} papers on OpenAlex…`); const btnA=document.getElementById("btnAdd"); btnA.disabled=true;
   try{
     let allResults=[];
     for(let i=0;i<cand.length;i+=40){
@@ -1656,48 +2048,54 @@ async function runAutoLink(){
     }
     const {byOaId,refs}=oaMatchRefs(allResults,cand);
     const links=oaCountLinks(byOaId,refs);
-    if(!links.length){ toast(`No new links found (${byOaId.size}/${cand.length} papers matched on OpenAlex)`); return; }
+    if(!links.length){ toast(`No new links found. OpenAlex recognised ${byOaId.size} of ${cand.length} papers.`); return; }
     pushUndo();
     let n=0; for(const [a,b] of links){ if(addEdge(a,b)) n++; }
     save(); updateStats(); renderSide(); requestDraw();
-    toast(`Auto-link: added ${n} citation link${n===1?"":"s"} (${byOaId.size}/${cand.length} papers matched)`);
-  }catch(err){ console.warn(err); toast("OpenAlex lookup failed — check your connection and try again"); }
+    toast(`Added ${n} citation link${n===1?"":"s"}. OpenAlex recognised ${byOaId.size} of ${cand.length} papers.`);
+  }catch(err){ console.warn(err); toast("Could not reach OpenAlex. Check your internet connection and try again."); }
+  finally{ btnA.disabled=false; }
 }
 async function fetchDoiMeta(){
   const doi=realDoi(document.getElementById("pDoi").value);
-  if(!doi){ toast("Enter a DOI or arXiv ID first"); return; }
-  const btn=document.getElementById("pFetch"); btn.disabled=true; btn.textContent="…";
+  if(!doi){ toast("Enter a DOI or arXiv ID first, for example 10.1145/3292500"); return; }
+  const btn=document.getElementById("pFetch"); const orig=btn.innerHTML; btn.disabled=true; btn.querySelector(".lbl").textContent="Fetching…";
   try{
     const res=await fetch(`${OA}/works/doi:${doi}?${OA_MAILTO}`);
-    if(!res.ok){ toast("Not found on OpenAlex"); return; }
+    if(!res.ok){ toast("OpenAlex has no record for that DOI"); return; }
     const w=await res.json();
     const fill=(id,v)=>{ const el=document.getElementById(id); if(v && !el.value.trim()) el.value=v; };
     fill("pTitle", w.title||"");
     fill("pAuthors",(w.authorships||[]).map(a=>a.author&&a.author.display_name).filter(Boolean).join(", "));
     fill("pYear", w.publication_year? String(w.publication_year):"");
     fill("pVenue", (w.primary_location&&w.primary_location.source&&w.primary_location.source.display_name)||"");
-    toast("Metadata filled from OpenAlex (empty fields only)");
-  }catch(err){ console.warn(err); toast("Lookup failed — offline?"); }
-  finally{ btn.disabled=false; btn.textContent="⤓ Fetch"; }
+    toast("Filled in the empty fields from OpenAlex");
+  }catch(err){ console.warn(err); toast("Could not reach OpenAlex. Check your internet connection."); }
+  finally{ btn.disabled=false; btn.innerHTML=orig; }
 }
 document.getElementById("pFetch").onclick=fetchDoiMeta;
 
 /* ==== src/js/08-boot.js ==== */
 /* ============================ Boot ============================ */
-function seedIfEmpty(){
-  if(state.papers.length) return;
-  const a=addPaper({key:"vaswani17",title:"Attention Is All You Need",authors:"Ashish Vaswani, Noam Shazeer",year:"2017",venue:"NeurIPS",doi:"arXiv:1706.03762",abstract:"",note:"Introduces the Transformer; self-attention replaces recurrence — the backbone for most later NLP work."});
+/* Demo papers appear only on the very first visit, never after "New library". */
+function seedDemo(){
+  const a=addPaper({key:"vaswani17",title:"Attention Is All You Need",authors:"Ashish Vaswani, Noam Shazeer",year:"2017",venue:"NeurIPS",doi:"arXiv:1706.03762",abstract:"",note:"Introduces the Transformer; self-attention replaces recurrence. The backbone for most later NLP work.",status:"read"});
   const b=addPaper({key:"devlin18",title:"BERT: Pre-training of Deep Bidirectional Transformers",authors:"Jacob Devlin, Ming-Wei Chang",year:"2018",venue:"NAACL",doi:"arXiv:1810.04805",abstract:"",note:""});
-  const c=addPaper({key:"he16",title:"Deep Residual Learning for Image Recognition",authors:"Kaiming He, Xiangyu Zhang",year:"2016",venue:"CVPR",doi:"arXiv:1512.03385",abstract:"",note:"ResNet — skip connections enable very deep nets."});
+  addPaper({key:"he16",title:"Deep Residual Learning for Image Recognition",authors:"Kaiming He, Xiangyu Zhang",year:"2016",venue:"CVPR",doi:"arXiv:1512.03385",abstract:"",note:"ResNet: skip connections make very deep networks trainable.",status:"skimmed"});
   addEdge(b.id,a.id); const e=findEdge(b.id,a.id); if(e) e.label="builds on the Transformer encoder";
+  addEdge(a.id,state.papers[2].id); const e2=findEdge(a.id,state.papers[2].id); if(e2) e2.label="residual connections in every block";
 }
-load(); resize(); seedIfEmpty(); updateStats(); updateFileName(); updateHint(); setLinkBtn(); setLabelsBtn(); setShapeBtn(); renderSide();
+const hadLibrary=load();
+resize();
+if(!hadLibrary) seedDemo();
+updateStats(); updateFileName(); updateHint(); setLinkBtn(); setLabelsBtn(); setShapeBtn(); setSideBtn(true); renderSide();
 if(isNarrow()) panelHide();
-if(state.papers.every(p=>p.x===0||p.x==null)) arrange();
+if(state.papers.length && state.papers.every(p=>p.x===0||p.x==null)) arrange();
 else { fit(); if(lastLayout==="circle" && state.papers.length) heb=buildHEB(currentCircularOrder()); }
+if(!hadLibrary){ arrange(); flushSave(); }
+undoStack.length=0; redoStack.length=0;
 requestDraw();
 markClean();
-
 
 </script>
 </body>
