@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LitNet — Literature Network</title>
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bar">
+    <div class="logo">Lit<span>Net</span></div>
+    <button id="btnAdd" class="primary" title="Add a paper — manually or from BibLaTeX"><span class="ic">＋</span><span class="lbl">Add ▾</span></button>
+    <button id="btnLink" title="Link mode (L) — click two papers"><span class="ic">🔗</span><span class="lbl">Link</span></button>
+    <button id="btnLayout" title="Layouts, edge-bundling & saved layouts"><span class="ic">⤢</span><span class="lbl">Layout ▾</span></button>
+    <button id="btnFit" title="Fit to view (F)"><span class="ic">⊡</span><span class="lbl">Fit</span></button>
+    <button id="btnLabels" title="Show/hide all annotation labels (T)"><span class="ic">🏷</span><span class="lbl">Labels</span></button>
+    <button id="btnShape" title="Switch all nodes between cards and circles"><span class="ic">▭</span><span class="lbl">Cards</span></button>
+    <input id="search" placeholder="Search title / author / notes…" />
+    <span class="spacer"></span>
+    <span id="fname"></span>
+    <span id="stats" class="count"></span>
+    <button id="btnOpen" title="Open a .json file to edit"><span class="ic">📂</span><span class="lbl">Open</span></button>
+    <button id="btnSave" title="Save to file (Ctrl/Cmd+S)"><span class="ic">💾</span><span class="lbl">Save</span></button>
+    <button id="btnExport" title="Export / Save As / BibLaTeX"><span class="ic">📤</span><span class="lbl">Export ▾</span></button>
+    <button id="btnSide" title="Toggle the notes panel">⮜</button>
+  </div>
+  <div id="main">
+    <div id="graphWrap">
+      <canvas id="cv"></canvas>
+      <div id="tip"></div>
+      <div id="hint"></div>
+      <button id="infoBtn" title="Legend & tips">ⓘ</button>
+      <button id="legendBtn" title="Colour legend — name your colours, click a swatch to filter">🎨</button>
+      <div id="legendPop" class="menu"></div>
+      <div id="infoPop" class="menu"></div>
+    </div>
+    <div id="side"><div class="inner" id="sideInner"></div></div>
+  </div>
+</div>
+
+<div id="addMenu" class="menu"></div>
+<div id="layoutMenu" class="menu"></div>
+<div id="exportMenu" class="menu"></div>
+<div id="toast"></div>
+
+<div class="modal" id="bibModal">
+  <div class="box">
+    <h2>Import BibLaTeX</h2>
+    <p class="meta">Paste from Zotero (right-click items → Export → BibLaTeX, or “Copy as BibLaTeX”). Duplicate keys or DOIs are skipped.</p>
+    <textarea id="bibText" rows="14" placeholder="@article{smith2020, title={...}, author={Smith, Jane and Doe, John}, year={2020}, ... }"></textarea>
+    <div class="count" id="bibCount"></div>
+    <div class="actions">
+      <button onclick="closeModal('bibModal')">Cancel</button>
+      <button class="primary" id="bibDo">Parse & Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="paperModal">
+  <div class="box">
+    <h2 id="paperModalTitle">Add Paper</h2>
+    <div class="field"><label>Title</label><input id="pTitle"></div>
+    <div class="field"><label>Authors (separate with " and ")</label><input id="pAuthors"></div>
+    <div style="display:flex;gap:10px">
+      <div class="field" style="flex:1"><label>Year</label><input id="pYear"></div>
+      <div class="field" style="flex:2"><label>Venue / Journal</label><input id="pVenue"></div>
+    </div>
+    <div class="field"><label>DOI / URL / arXiv ID</label><div style="display:flex;gap:6px"><input id="pDoi" style="flex:1"><button id="pFetch" title="Fetch title/authors/year/venue from OpenAlex">⤓ Fetch</button></div></div>
+    <div class="field"><label>Notes / Summary</label><textarea id="pNote" rows="4"></textarea></div>
+    <div class="actions">
+      <button onclick="closeModal('paperModal')">Cancel</button>
+      <button class="primary" id="paperDo">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="confirmModal">
+  <div class="box">
+    <h2>Confirm</h2>
+    <p class="meta" id="confirmMsg"></p>
+    <div class="actions" id="confirmBtns"></div>
+  </div>
+</div>
+
+<input type="file" id="fileIn" accept="application/json,.json" style="display:none">
+
+<script>
+//__JS__
+</script>
+</body>
+</html>
